@@ -11,8 +11,6 @@ import com.jagrosh.discordipc.entities.RichPresence;
 import com.jagrosh.discordipc.entities.User;
 import com.jagrosh.discordipc.entities.pipe.PipeStatus;
 
-import java.time.OffsetDateTime;
-
 public class BurpcordExtension implements BurpExtension {
 
     private IPCClient client;
