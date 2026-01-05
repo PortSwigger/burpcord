@@ -47,6 +47,9 @@ public class DiscordRPCManager {
     // Status rotation
     private int statusIndex = 0;
 
+    // Persistent start time
+    private long startTime = 0;
+
     private ScheduledExecutorService scheduler;
 
     public DiscordRPCManager(MontoyaApi api, BurpcordConfig config) {
@@ -81,6 +84,8 @@ public class DiscordRPCManager {
                 public void onReady(IPCClient client) {
                     api.logging().logToOutput("Discord IPC Ready!");
                     isConnected = true;
+                    // Initialize start time on connection
+                    startTime = System.currentTimeMillis() / 1000L;
                     // Send initial presence
                     updatePresence("Using Burp Suite");
                     startPeriodicUpdates();
@@ -246,7 +251,7 @@ public class DiscordRPCManager {
                 RichPresence.Builder builder = new RichPresence.Builder();
                 builder.setDetails(details)
                         .setLargeImage("burp", "Burp Suite")
-                        .setStartTimestamp(System.currentTimeMillis() / 1000L);
+                        .setStartTimestamp(startTime); // Use persistent start time
                 // Set state as well
                 builder.setState("Security Researching");
 
