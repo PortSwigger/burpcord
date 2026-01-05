@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DiscordRPCManager {
 
     private final MontoyaApi api;
+    private final BurpcordConfig config;
     private IPCClient client;
     private boolean isConnected = false;
 
@@ -48,8 +49,9 @@ public class DiscordRPCManager {
 
     private ScheduledExecutorService scheduler;
 
-    public DiscordRPCManager(MontoyaApi api) {
+    public DiscordRPCManager(MontoyaApi api, BurpcordConfig config) {
         this.api = api;
+        this.config = config;
     }
 
     public boolean isConnected() {
@@ -73,14 +75,14 @@ public class DiscordRPCManager {
 
     public void initialize() {
         try {
-            client = new IPCClient(BurpcordConfig.CLIENT_ID);
+            client = new IPCClient(Long.parseLong(config.getAppId()));
             client.setListener(new IPCListener() {
                 @Override
                 public void onReady(IPCClient client) {
                     api.logging().logToOutput("Discord IPC Ready!");
                     isConnected = true;
                     // Send initial presence
-                    updatePresence(BurpcordConfig.DEFAULT_PRESENCE);
+                    updatePresence("Using Burp Suite");
                     startPeriodicUpdates();
                 }
 
@@ -189,7 +191,7 @@ public class DiscordRPCManager {
             // Auto-clear after 5 seconds of inactivity
             if (currentTime - lastInterceptTime > 5000) {
                 isIntercepting.set(false);
-            } else {
+            } else if (config.isShowIntercept()) {
                 activeStatuses.add(String.format("Intercepting Traffic - %d reqs", requestCount.get()));
             }
         }
@@ -200,7 +202,7 @@ public class DiscordRPCManager {
         int med = vulnMedium.get();
         boolean recentScan = (currentTime - lastActiveScanTime < 60000) || (currentTime - lastPassiveScanTime < 60000);
 
-        if (recentScan || high > 0 || med > 0) {
+        if ((recentScan || high > 0 || med > 0) && config.isShowScan()) {
             if (high > 0 || med > 0) {
                 activeStatuses.add(String.format("Scanning: %d High | %d Med Issues", high, med));
             } else if (recentScan) {
@@ -209,51 +211,36 @@ public class DiscordRPCManager {
         }
 
         // 3. Check Proxy (If processing requests)
-        // We consider proxy active if we have requests and are not just intercepting
-        if (requestCount.get() > 0 && !isIntercepting.get()) {
-            // Ideally check recent proxy activity, but for now existance of requests
-            // implies usage.
-            // Maybe verify if count changed? Let's keep it simple as per "Proxy >
-            // Repeater".
+        if (requestCount.get() > 0 && !isIntercepting.get() && config.isShowProxy()) {
             activeStatuses.add(String.format("Proxy: %d Reqs | %d Resps", requestCount.get(), responseCount.get()));
         }
 
         // 4. Check Repeater (Active in last 60s)
-        if (isRepeaterActive.get() && (currentTime - lastRepeaterActivity < 60000)) {
+        if (isRepeaterActive.get() && (currentTime - lastRepeaterActivity < 60000) && config.isShowRepeater()) {
             activeStatuses.add(String.format("Testing in Repeater - %d requests", repeaterRequests.get()));
         }
 
         // Default if nothing else
         if (activeStatuses.isEmpty()) {
-            updatePresence(BurpcordConfig.DEFAULT_PRESENCE);
+            updatePresence("Using Burp Suite");
             return;
         }
 
         // Rotate statuses
-        // Priority logic from requirement: Scanner > Proxy > Repeater > General
-        // The requirement says "priority... to align priority to scanner > proxy >
-        // repeater... respecting intended ordering"
-        // AND "Implement rotation... round-robin over scanner, proxy, repeater when
-        // they're simultaneously active"
-        // This implies we should rotate through all valid ones.
-
-        // We collected them in an order. Let's just rotate through the collection.
-        // If we wanted strict priority (only show top), we would pick
-        // activeStatuses.get(0).
-        // But "rotation" implies cycling.
-
         String nextStatus = activeStatuses.get(statusIndex++ % activeStatuses.size());
         updatePresence(nextStatus);
     }
 
     public void updatePresence(String details) {
-        if (!BurpcordConfig.ENABLE_RPC)
+        if (!config.isFeatureEnabled("rpc_enabled")) {
             return;
+        }
 
         if (client != null && client.getStatus() == PipeStatus.CONNECTED) {
             try {
                 RichPresence.Builder builder = new RichPresence.Builder();
                 builder.setDetails(details)
+                        .setLargeImage("burp", "Burp Suite")
                         .setStartTimestamp(System.currentTimeMillis() / 1000L);
                 client.sendRichPresence(builder.build());
             } catch (Exception e) {
