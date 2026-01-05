@@ -83,8 +83,7 @@ public class BurpcordSettingsTab extends JPanel {
     private void updateInterval() {
         int val = (Integer) intervalSpinner.getValue();
         config.setUpdateInterval(val);
-        rpcManager.shutdown();
-        rpcManager.initialize();
+        rpcManager.restartScheduler();
     }
 
     private void saveAll() {

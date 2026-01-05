@@ -168,10 +168,15 @@ public class DiscordRPCManager {
         lastRepeaterActivity = System.currentTimeMillis();
     }
 
+    public void restartScheduler() {
+        stopPeriodicUpdates();
+        startPeriodicUpdates();
+    }
+
     private void startPeriodicUpdates() {
         if (scheduler == null || scheduler.isShutdown()) {
             scheduler = Executors.newSingleThreadScheduledExecutor();
-            scheduler.scheduleAtFixedRate(this::updateStatusFromStats, 0, 5, TimeUnit.SECONDS);
+            scheduler.scheduleAtFixedRate(this::updateStatusFromStats, 0, config.getUpdateInterval(), TimeUnit.SECONDS);
         }
     }
 

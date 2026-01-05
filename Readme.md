@@ -58,12 +58,12 @@ Requirements:
 -   Gradle
 
 ```bash
-git clone https://github.com/yourusername/burpcord.git
+git clone https://github.com/jondmarien/burpcord.git
 cd burpcord
-./gradlew shadowJar
+./gradlew jar
 ```
 
-The compiled jar will be in `build/libs/burpcord-all.jar`.
+The compiled jar will be in `build/libs/burpcord-1.0.jar`.
 
 ## Troubleshooting
 
