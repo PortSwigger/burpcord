@@ -23,6 +23,10 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
 
         BurpcordScannerListener scannerListener = new BurpcordScannerListener(manager);
         api.scanner().registerAuditIssueHandler(scannerListener);
+        api.scanner().registerActiveScanCheck(scannerListener,
+                burp.api.montoya.scanner.scancheck.ScanCheckType.PER_INSERTION_POINT);
+        api.scanner().registerPassiveScanCheck(scannerListener,
+                burp.api.montoya.scanner.scancheck.ScanCheckType.PER_REQUEST);
 
         BurpcordRepeaterListener repeaterListener = new BurpcordRepeaterListener(manager);
         api.http().registerHttpHandler(repeaterListener);
