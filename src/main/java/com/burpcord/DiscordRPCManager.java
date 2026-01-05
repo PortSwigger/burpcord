@@ -247,7 +247,27 @@ public class DiscordRPCManager {
                 builder.setDetails(details)
                         .setLargeImage("burp", "Burp Suite")
                         .setStartTimestamp(System.currentTimeMillis() / 1000L);
-                client.sendRichPresence(builder.build());
+                // Set state as well
+                builder.setState("Security Researching");
+
+                RichPresence rp = builder.build();
+
+                // Fix for NPE in library: explicitly set activityType via reflection if null
+                try {
+                    java.lang.reflect.Field f = rp.getClass().getDeclaredField("activityType");
+                    f.setAccessible(true);
+                    if (f.get(rp) == null) {
+                        Class<?> enumClass = f.getType();
+                        Object[] constants = enumClass.getEnumConstants();
+                        if (constants != null && constants.length > 0) {
+                            f.set(rp, constants[0]); // Default to first available (Playing)
+                        }
+                    }
+                } catch (Exception e) {
+                    // Silent
+                }
+
+                client.sendRichPresence(rp);
             } catch (Exception e) {
                 api.logging().logToError("Failed to update presence: " + e.getMessage());
             }
