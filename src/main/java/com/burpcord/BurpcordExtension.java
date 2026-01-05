@@ -16,10 +16,16 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
         api.logging().logToOutput("Loading Burpcord...");
 
         manager = new DiscordRPCManager(api);
-        BurpcordProxyHandler proxyHandler = new BurpcordProxyHandler(manager);
 
+        BurpcordProxyHandler proxyHandler = new BurpcordProxyHandler(manager);
         api.proxy().registerRequestHandler(proxyHandler);
         api.proxy().registerResponseHandler(proxyHandler);
+
+        BurpcordScannerListener scannerListener = new BurpcordScannerListener(manager);
+        api.scanner().registerAuditIssueHandler(scannerListener);
+
+        BurpcordRepeaterListener repeaterListener = new BurpcordRepeaterListener(manager);
+        api.http().registerHttpHandler(repeaterListener);
 
         if (BurpcordConfig.ENABLE_RPC) {
             manager.initialize();
