@@ -9,11 +9,22 @@ import com.jagrosh.discordipc.entities.RichPresence;
 import com.jagrosh.discordipc.entities.User;
 import com.jagrosh.discordipc.entities.pipe.PipeStatus;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class DiscordRPCManager {
 
     private final MontoyaApi api;
     private IPCClient client;
     private boolean isConnected = false;
+
+    private final AtomicInteger requestCount = new AtomicInteger(0);
+    private final AtomicInteger responseCount = new AtomicInteger(0);
+    private final AtomicBoolean isIntercepting = new AtomicBoolean(false);
+    private ScheduledExecutorService scheduler;
 
     public DiscordRPCManager(MontoyaApi api) {
         this.api = api;
@@ -21,6 +32,10 @@ public class DiscordRPCManager {
 
     public boolean isConnected() {
         return isConnected;
+    }
+
+    public void setIntercepting(boolean intercepting) {
+        isIntercepting.set(intercepting);
     }
 
     public void initialize() {
@@ -33,6 +48,7 @@ public class DiscordRPCManager {
                     isConnected = true;
                     // Send initial presence
                     updatePresence(BurpcordConfig.DEFAULT_PRESENCE);
+                    startPeriodicUpdates();
                 }
 
                 @Override
@@ -40,12 +56,14 @@ public class DiscordRPCManager {
                     String message = (t != null && t.getMessage() != null) ? t.getMessage() : "Unknown error";
                     api.logging().logToError("Discord IPC Disconnected: " + message);
                     isConnected = false;
+                    stopPeriodicUpdates();
                 }
 
                 @Override
                 public void onClose(IPCClient client, JsonObject json) {
                     api.logging().logToOutput("Discord IPC Closed: " + json.toString());
                     isConnected = false;
+                    stopPeriodicUpdates();
                 }
 
                 @Override
@@ -83,6 +101,37 @@ public class DiscordRPCManager {
         }
     }
 
+    public void incrementRequestCount() {
+        requestCount.incrementAndGet();
+    }
+
+    public void incrementResponseCount() {
+        responseCount.incrementAndGet();
+    }
+
+    private void startPeriodicUpdates() {
+        if (scheduler == null || scheduler.isShutdown()) {
+            scheduler = Executors.newSingleThreadScheduledExecutor();
+            scheduler.scheduleAtFixedRate(this::updateStatusFromStats, 0, 15, TimeUnit.SECONDS);
+        }
+    }
+
+    private void stopPeriodicUpdates() {
+        if (scheduler != null) {
+            scheduler.shutdown();
+            scheduler = null;
+        }
+    }
+
+    private void updateStatusFromStats() {
+        if (isIntercepting.get()) {
+            String status = String.format("Intercepting Traffic - %d requests", requestCount.get());
+            updatePresence(status);
+        } else {
+            updatePresence(BurpcordConfig.DEFAULT_PRESENCE);
+        }
+    }
+
     public void updatePresence(String details) {
         if (!BurpcordConfig.ENABLE_RPC)
             return;
@@ -100,6 +149,8 @@ public class DiscordRPCManager {
     }
 
     public void shutdown() {
+        stopPeriodicUpdates();
+        isIntercepting.set(false);
         if (client != null) {
             try {
                 client.close();
