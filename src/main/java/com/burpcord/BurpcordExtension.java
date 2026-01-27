@@ -35,10 +35,15 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
         BurpcordIntruderListener intruderListener = new BurpcordIntruderListener(manager);
         api.http().registerHttpHandler(intruderListener);
 
+        // Register WebSocket listener for activity tracking
+        BurpcordWebSocketListener webSocketListener = new BurpcordWebSocketListener(manager);
+        api.websockets().registerWebSocketCreatedHandler(webSocketListener);
+
         // Register Settings Tab
         api.userInterface().registerSuiteTab("Burpcord", new BurpcordSettingsTab(api, config, manager));
 
         manager.initialize();
+
     }
 
     @Override

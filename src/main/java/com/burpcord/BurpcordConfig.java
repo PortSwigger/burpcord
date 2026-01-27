@@ -12,6 +12,10 @@ public class BurpcordConfig {
     private static final String KEY_RPC_ENABLED = "burpcord_rpc_enabled";
     private static final String KEY_SHOW_INTRUDER = "burpcord_show_intruder";
     private static final String KEY_CUSTOM_STATE = "burpcord_custom_state";
+    private static final String KEY_SHOW_SITEMAP = "burpcord_show_sitemap";
+    private static final String KEY_SHOW_SCOPE = "burpcord_show_scope";
+    private static final String KEY_SHOW_COLLABORATOR = "burpcord_show_collaborator";
+    private static final String KEY_SHOW_WEBSOCKETS = "burpcord_show_websockets";
 
     private static final String DEFAULT_APP_ID = "1457789708753965206";
     private static final int DEFAULT_UPDATE_INTERVAL = 5;
@@ -106,5 +110,38 @@ public class BurpcordConfig {
 
     public void setCustomState(String state) {
         preferences.setString(KEY_CUSTOM_STATE, state);
+    }
+
+    // v1.3 - Montoya API Features
+    public boolean isShowSiteMap() {
+        return isFeatureEnabled(KEY_SHOW_SITEMAP);
+    }
+
+    public void setShowSiteMap(boolean enabled) {
+        setFeatureEnabled(KEY_SHOW_SITEMAP, enabled);
+    }
+
+    public boolean isShowScope() {
+        return isFeatureEnabled(KEY_SHOW_SCOPE);
+    }
+
+    public void setShowScope(boolean enabled) {
+        setFeatureEnabled(KEY_SHOW_SCOPE, enabled);
+    }
+
+    public boolean isShowCollaborator() {
+        return isFeatureEnabled(KEY_SHOW_COLLABORATOR);
+    }
+
+    public void setShowCollaborator(boolean enabled) {
+        setFeatureEnabled(KEY_SHOW_COLLABORATOR, enabled);
+    }
+
+    public boolean isShowWebSockets() {
+        return isFeatureEnabled(KEY_SHOW_WEBSOCKETS);
+    }
+
+    public void setShowWebSockets(boolean enabled) {
+        setFeatureEnabled(KEY_SHOW_WEBSOCKETS, enabled);
     }
 }

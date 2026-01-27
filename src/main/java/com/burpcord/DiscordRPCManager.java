@@ -1,6 +1,7 @@
 package com.burpcord;
 
 import burp.api.montoya.MontoyaApi;
+import burp.api.montoya.collaborator.CollaboratorClient;
 
 import com.google.gson.JsonObject;
 
@@ -49,6 +50,14 @@ public class DiscordRPCManager {
     private final AtomicInteger intruderRequests = new AtomicInteger(0);
     private long lastIntruderActivity = 0;
 
+    // WebSocket stats
+    private final AtomicInteger webSocketMessages = new AtomicInteger(0);
+    private long lastWebSocketActivity = 0;
+
+    // Collaborator (Pro only)
+    private CollaboratorClient collaboratorClient;
+    private boolean collaboratorAvailable = false;
+
     // Status rotation
     private int statusIndex = 0;
 
@@ -60,6 +69,18 @@ public class DiscordRPCManager {
     public DiscordRPCManager(MontoyaApi api, BurpcordConfig config) {
         this.api = api;
         this.config = config;
+        initCollaborator();
+    }
+
+    private void initCollaborator() {
+        try {
+            collaboratorClient = api.collaborator().createClient();
+            collaboratorAvailable = true;
+            api.logging().logToOutput("Collaborator client initialized (Pro feature)");
+        } catch (Exception e) {
+            collaboratorAvailable = false;
+            api.logging().logToOutput("Collaborator not available (Community Edition or not configured)");
+        }
     }
 
     public boolean isConnected() {
@@ -85,21 +106,21 @@ public class DiscordRPCManager {
         try {
             client = new IPCClient(Long.parseLong(config.getAppId()));
             client.setListener(new IPCListener() {
-                @Override
                 public void onReady(IPCClient client) {
                     api.logging().logToOutput("Discord IPC Ready!");
+                    BurpcordSettingsTab.log("Discord RPC connected successfully!");
                     isConnected = true;
                     // Initialize start time on connection
                     startTime = System.currentTimeMillis() / 1000L;
-                    // Send initial presence
-                    updatePresence("Using Burp Suite");
+                    // Send initial presence with Burp version
+                    updatePresence(getBurpVersion());
                     startPeriodicUpdates();
                 }
 
-                @Override
                 public void onDisconnect(IPCClient client, Throwable t) {
                     String message = (t != null && t.getMessage() != null) ? t.getMessage() : "Unknown error";
                     api.logging().logToError("Discord IPC Disconnected: " + message);
+                    BurpcordSettingsTab.log("ERROR: Discord disconnected - " + message);
                     isConnected = false;
                     stopPeriodicUpdates();
                 }
@@ -184,9 +205,69 @@ public class DiscordRPCManager {
         lastIntruderActivity = System.currentTimeMillis();
     }
 
+    // WebSocket methods
+    public void markWebSocketActivity() {
+        webSocketMessages.incrementAndGet();
+        lastWebSocketActivity = System.currentTimeMillis();
+    }
+
     public void restartScheduler() {
         stopPeriodicUpdates();
         startPeriodicUpdates();
+    }
+
+    // Montoya API Stats Methods
+    private String getBurpVersion() {
+        try {
+            return api.burpSuite().version().toString();
+        } catch (Exception e) {
+            return "Burp Suite";
+        }
+    }
+
+    private int getProxyHistorySize() {
+        try {
+            return api.proxy().history().size();
+        } catch (Exception e) {
+            return requestCount.get();
+        }
+    }
+
+    private int getSiteMapSize() {
+        try {
+            return api.siteMap().requestResponses().size();
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private int getScopeTargetCount() {
+        try {
+            return (int) api.proxy().history().stream()
+                    .map(r -> r.finalRequest().httpService().host())
+                    .distinct()
+                    .filter(host -> {
+                        try {
+                            return api.scope().isInScope("https://" + host);
+                        } catch (Exception e) {
+                            return false;
+                        }
+                    })
+                    .count();
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private int getCollaboratorHits() {
+        if (!collaboratorAvailable || collaboratorClient == null) {
+            return -1;
+        }
+        try {
+            return collaboratorClient.getAllInteractions().size();
+        } catch (Exception e) {
+            return -1;
+        }
     }
 
     private void startPeriodicUpdates() {
@@ -237,9 +318,12 @@ public class DiscordRPCManager {
             }
         }
 
-        // 3. Check Proxy (If processing requests)
-        if (requestCount.get() > 0 && !isIntercepting.get() && config.isShowProxy()) {
-            activeStatuses.add(String.format("Proxy: %d Reqs | %d Resps", requestCount.get(), responseCount.get()));
+        // 3. Check Proxy (use Montoya API for accurate count)
+        if (config.isShowProxy()) {
+            int historySize = getProxyHistorySize();
+            if (historySize > 0 && !isIntercepting.get()) {
+                activeStatuses.add(String.format("Proxy: %d requests", historySize));
+            }
         }
 
         // 4. Check Repeater (Active in last 60s)
@@ -252,9 +336,38 @@ public class DiscordRPCManager {
             activeStatuses.add(String.format("Intruder Attack - %d requests", intruderRequests.get()));
         }
 
+        // 6. Check Site Map
+        if (config.isShowSiteMap()) {
+            int endpoints = getSiteMapSize();
+            if (endpoints > 0) {
+                activeStatuses.add(String.format("Site Map: %d endpoints", endpoints));
+            }
+        }
+
+        // 7. Check Scope
+        if (config.isShowScope()) {
+            int targets = getScopeTargetCount();
+            if (targets > 0) {
+                activeStatuses.add(String.format("Testing %d target(s) in scope", targets));
+            }
+        }
+
+        // 8. Check Collaborator (Pro only)
+        if (config.isShowCollaborator() && collaboratorAvailable) {
+            int hits = getCollaboratorHits();
+            if (hits > 0) {
+                activeStatuses.add(String.format("Collaborator: %d OOB hits!", hits));
+            }
+        }
+
+        // 9. Check WebSockets (Active in last 60s)
+        if ((currentTime - lastWebSocketActivity < 60000) && config.isShowWebSockets()) {
+            activeStatuses.add(String.format("WebSocket: %d messages", webSocketMessages.get()));
+        }
+
         // Default if nothing else
         if (activeStatuses.isEmpty()) {
-            updatePresence("Using Burp Suite");
+            updatePresence(getBurpVersion());
             return;
         }
 
@@ -304,12 +417,15 @@ public class DiscordRPCManager {
     public void shutdown() {
         stopPeriodicUpdates();
         isIntercepting.set(false);
+        isConnected = false;
+        startTime = 0; // Reset so next connection gets fresh time
         if (client != null) {
             try {
                 client.close();
             } catch (Exception e) {
                 api.logging().logToError("Error shutting down Discord IPC: " + e.getMessage());
             }
+            client = null;
         }
     }
 }
