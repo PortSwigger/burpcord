@@ -5,12 +5,46 @@ import burp.api.montoya.MontoyaApi;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Settings tab UI for the Burpcord extension in Burp Suite.
+ * 
+ * <p>
+ * This class creates and manages the graphical user interface for configuring
+ * Burpcord settings. It appears as a tab in the main Burp Suite window and
+ * provides
+ * controls for:
+ * </p>
+ * <ul>
+ * <li>Discord App ID configuration</li>
+ * <li>Update interval adjustment</li>
+ * <li>Custom state text for Discord status</li>
+ * <li>Feature toggles for individual status types</li>
+ * <li>RPC reload functionality</li>
+ * <li>Built-in log viewer for extension events</li>
+ * </ul>
+ * 
+ * <h2>Thread Safety</h2>
+ * <p>
+ * The static {@link #log(String)} method uses
+ * {@link SwingUtilities#invokeLater(Runnable)}
+ * to ensure thread-safe UI updates from any thread.
+ * </p>
+ * 
+ * @author Jon Marien
+ * @version 1.3
+ * @see BurpcordConfig
+ * @see DiscordRPCManager
+ */
 public class BurpcordSettingsTab extends JPanel {
 
+    /** Montoya API instance for accessing Burp Suite features. */
     private final MontoyaApi api;
+    /** Configuration provider for reading/writing preferences. */
     private final BurpcordConfig config;
+    /** RPC manager for triggering reconnections. */
     private final DiscordRPCManager rpcManager;
 
+    // UI Components
     private final JTextField appIdField;
     private final JSpinner intervalSpinner;
     private final JButton reloadRpcBtn;
@@ -25,8 +59,17 @@ public class BurpcordSettingsTab extends JPanel {
     private final JCheckBox showWebSocketsCheck;
     private final JTextField customStateField;
     private final JTextArea logArea;
+
+    /** Singleton instance for static log access. */
     private static BurpcordSettingsTab instance;
 
+    /**
+     * Creates a new settings tab with all UI components.
+     * 
+     * @param api        The Montoya API instance
+     * @param config     The configuration provider
+     * @param rpcManager The Discord RPC manager
+     */
     public BurpcordSettingsTab(MontoyaApi api, BurpcordConfig config, DiscordRPCManager rpcManager) {
         this.api = api;
         this.config = config;

@@ -1,8 +1,33 @@
 package com.burpcord;
 
+/**
+ * Configuration management for the Burpcord extension.
+ * 
+ * <p>
+ * This class handles persistence of all user preferences using Burp Suite's
+ * built-in Preferences API. Settings are automatically saved and restored
+ * between Burp Suite sessions.
+ * </p>
+ * 
+ * <h2>Configuration Options</h2>
+ * <ul>
+ * <li><b>Discord App ID</b>: The Application ID from Discord Developer
+ * Portal</li>
+ * <li><b>Update Interval</b>: How often to update Discord status (in
+ * seconds)</li>
+ * <li><b>Custom State</b>: User-defined status text shown in Discord</li>
+ * <li><b>Feature Toggles</b>: Enable/disable individual status types</li>
+ * </ul>
+ * 
+ * @author Jon Marien
+ * @version 1.3
+ */
 public class BurpcordConfig {
+
+    /** Burp Suite preferences storage instance. */
     private final burp.api.montoya.persistence.Preferences preferences;
 
+    // Preference keys
     private static final String KEY_APP_ID = "burpcord_app_id";
     private static final String KEY_UPDATE_INTERVAL = "burpcord_update_interval";
     private static final String KEY_SHOW_INTERCEPT = "burpcord_show_intercept";
@@ -17,10 +42,19 @@ public class BurpcordConfig {
     private static final String KEY_SHOW_COLLABORATOR = "burpcord_show_collaborator";
     private static final String KEY_SHOW_WEBSOCKETS = "burpcord_show_websockets";
 
+    // Default values
+    /** Default Discord Application ID. */
     private static final String DEFAULT_APP_ID = "1457789708753965206";
+    /** Default status update interval in seconds. */
     private static final int DEFAULT_UPDATE_INTERVAL = 5;
+    /** Default state text shown in Discord. */
     private static final String DEFAULT_STATE = "Security Researching";
 
+    /**
+     * Creates a new configuration instance.
+     * 
+     * @param preferences The Burp Suite preferences API instance for persistence
+     */
     public BurpcordConfig(burp.api.montoya.persistence.Preferences preferences) {
         this.preferences = preferences;
     }

@@ -18,13 +18,54 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Central manager for Discord Rich Presence integration with Burp Suite.
+ * 
+ * <p>
+ * This class coordinates all Discord IPC communication and maintains
+ * the state of various Burp Suite activities. It:
+ * </p>
+ * <ul>
+ * <li>Manages the Discord IPC client lifecycle (connect, disconnect,
+ * reconnect)</li>
+ * <li>Periodically updates Discord presence with current Burp activity</li>
+ * <li>Tracks activity from multiple tools (Proxy, Scanner, Repeater, Intruder,
+ * WebSockets)</li>
+ * <li>Integrates with Montoya API for advanced metrics (Site Map, Scope,
+ * Collaborator)</li>
+ * <li>Rotates between active statuses when multiple tools are in use</li>
+ * </ul>
+ * 
+ * <h2>Thread Safety</h2>
+ * <p>
+ * All activity counters use {@link AtomicInteger} and {@link AtomicBoolean}
+ * to ensure thread-safe updates from Burp Suite's event handlers.
+ * </p>
+ * 
+ * <h2>Status Priority</h2>
+ * <p>
+ * When multiple activities are active, they are displayed in rotation.
+ * Priority order: Intercept → Scanner → Proxy → Repeater → Intruder →
+ * Site Map → Scope → Collaborator → WebSockets
+ * </p>
+ * 
+ * @author Jon Marien
+ * @version 1.3
+ * @see BurpcordConfig
+ * @see BurpcordSettingsTab
+ */
 public class DiscordRPCManager {
 
+    /** Montoya API instance for accessing Burp Suite features. */
     private final MontoyaApi api;
+    /** Configuration provider for user preferences. */
     private final BurpcordConfig config;
+    /** Discord IPC client for Rich Presence communication. */
     private IPCClient client;
+    /** Connection status flag. */
     private boolean isConnected = false;
 
+    // Proxy activity tracking
     private final AtomicInteger requestCount = new AtomicInteger(0);
     private final AtomicInteger responseCount = new AtomicInteger(0);
 
@@ -61,7 +102,7 @@ public class DiscordRPCManager {
     // Status rotation
     private int statusIndex = 0;
 
-    // Persistent start time
+    // Persistent start time for Discord timestamp
     private long startTime = 0;
 
     private ScheduledExecutorService scheduler;

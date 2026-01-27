@@ -8,12 +8,33 @@ import burp.api.montoya.http.handler.RequestToBeSentAction;
 import burp.api.montoya.http.handler.ResponseReceivedAction;
 
 /**
- * Tracks Intruder attack activity for Discord Rich Presence status.
+ * Handles Burp Suite Intruder events for Discord Rich Presence updates.
+ * 
+ * <p>
+ * This handler detects HTTP requests originating from the Intruder tool
+ * during automated attacks and notifies the {@link DiscordRPCManager} of
+ * attack activity with request counts.
+ * </p>
+ * 
+ * <p>
+ * Intruder activity is tracked with a 60-second timeout, so the status
+ * will automatically clear after an attack completes or is stopped.
+ * </p>
+ * 
+ * @author Jon Marien
+ * @version 1.3
+ * @see DiscordRPCManager
  */
 public class BurpcordIntruderListener implements HttpHandler {
 
+    /** Reference to the RPC manager for status updates. */
     private final DiscordRPCManager manager;
 
+    /**
+     * Creates a new Intruder listener.
+     * 
+     * @param manager The Discord RPC manager to notify of Intruder activity
+     */
     public BurpcordIntruderListener(DiscordRPCManager manager) {
         this.manager = manager;
     }

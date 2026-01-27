@@ -1,10 +1,10 @@
 # AGENTS.md
 
-This file provides guidance to WARP (warp.dev) when working with code in this repository.
+This file provides guidance to AI agents and WARP (warp.dev) when working with code in this repository.
 
 ## Project Overview
 
-Burpcord is a Burp Suite extension that integrates Discord Rich Presence functionality. It displays real-time Burp Suite activity (Intercepting, Scanning, Proxying, Repeater) on Discord profiles. The extension is built using Java and the Burp Suite Montoya API.
+Burpcord is a Burp Suite extension that integrates Discord Rich Presence functionality. It displays real-time Burp Suite activity on Discord profiles, including security testing status, scan results, tool usage, and advanced metrics via the Montoya API. The extension is built using Java 21 and the Burp Suite Montoya API.
 
 ## Build System
 
@@ -24,7 +24,7 @@ Or via Makefile:
 make build
 ```
 
-The compiled JAR will be located at: `build/libs/Burpcord-1.0.jar`
+The compiled JAR will be located at: `build/libs/Burpcord-X.X.jar`
 
 **Clean build artifacts:**
 ```powershell
@@ -42,7 +42,7 @@ make clean
 ### Extension Entry Point
 `BurpcordExtension` (implements `BurpExtension`) is the main entry point:
 - Initializes the Discord RPC manager
-- Registers handlers for Proxy, Scanner, and Repeater
+- Registers handlers for Proxy, Scanner, Repeater, Intruder, and WebSockets
 - Creates the Settings UI tab
 - Implements proper cleanup via `ExtensionUnloadingHandler`
 
@@ -53,19 +53,29 @@ make clean
 - Periodic status updates via `ScheduledExecutorService`
 - Atomic counters for requests, responses, and vulnerabilities
 - Status rotation when multiple activities are active
-- Priority-based status determination (Intercept > Scanner > Proxy > Repeater)
+- Priority-based status determination
+- Montoya API integrations for proxy history, site map, scope, and Collaborator
+- WebSocket message tracking
 
 **BurpcordConfig** - Configuration persistence layer:
 - Uses Burp's `Preferences` API for storage
 - Manages Discord App ID, update interval, and feature toggles
 - Provides default values when preferences are unset
+- v1.3 features: site map, scope, collaborator, websockets toggles
 
 **Event Handlers:**
 - `BurpcordProxyHandler` - Tracks proxy requests/responses and intercept status
 - `BurpcordScannerListener` - Monitors active/passive scans and vulnerability counts
 - `BurpcordRepeaterListener` - Detects Repeater tool activity via `ToolSource`
+- `BurpcordIntruderListener` - Tracks Intruder attack requests via `HttpHandler`
+- `BurpcordWebSocketListener` - Monitors WebSocket messages via `WebSocketCreatedHandler`
 
-**BurpcordSettingsTab** - GUI configuration interface for users
+**BurpcordSettingsTab** - GUI configuration interface:
+- Reload RPC button for quick reconnection
+- App ID and interval configuration
+- Custom state text field
+- Feature toggles for all status types
+- Built-in log viewer with timestamps
 
 ### Threading Model
 
@@ -73,14 +83,20 @@ make clean
 - Event handlers execute on Burp's threads (must be fast to avoid blocking)
 - All shared state uses `AtomicInteger` and `AtomicBoolean` for thread safety
 - Scheduler is properly shutdown in `extensionUnloaded()` to prevent resource leaks
+- UI logging uses `SwingUtilities.invokeLater()` for thread-safe updates
 
 ### Status Priority Logic
 
 Status updates follow this priority order (highest to lowest):
 1. **Intercepting** - Active when proxy traffic is being intercepted (clears after 5s inactivity)
 2. **Scanning** - Shows when scan activity occurred in last 60s OR vulnerabilities detected
-3. **Proxy** - Displays request/response counts when proxy is active
+3. **Proxy** - Displays accurate request count from Montoya API
 4. **Repeater** - Shows when Repeater was used in last 60s
+5. **Intruder** - Shows when Intruder attack is active (last 60s)
+6. **Site Map** - Displays mapped endpoint count
+7. **Scope** - Shows unique target count in scope
+8. **Collaborator** - Shows OOB interaction hits (Pro only)
+9. **WebSocket** - Shows message count when WebSocket activity detected
 
 When multiple statuses are active, they rotate on each update interval.
 
@@ -127,9 +143,11 @@ The extension requires a Discord Application ID to function. Users can:
 There is no automated test suite. Manual testing requires:
 1. Loading the JAR in Burp Suite via Extensions → Installed → Add
 2. Verifying Discord is running and Game Activity is enabled
-3. Testing each feature (Intercept, Scanner, Proxy, Repeater) individually
-4. Checking the Burpcord tab appears and settings persist
-5. Verifying proper cleanup when unloading the extension
+3. Testing each feature (Intercept, Scanner, Proxy, Repeater, Intruder) individually
+4. Testing v1.3 features (Site Map, Scope, Collaborator, WebSockets)
+5. Checking the Burpcord tab appears and settings persist
+6. Verifying proper cleanup when unloading the extension
+7. Testing the log viewer displays connection events
 
 ## Common Development Scenarios
 
@@ -138,6 +156,7 @@ There is no automated test suite. Manual testing requires:
 2. Create or modify a listener/handler to update those variables
 3. Update `updateStatusFromStats()` to include the new status in priority logic
 4. Add configuration toggle in `BurpcordConfig` if user-configurable
+5. Add checkbox to `BurpcordSettingsTab`
 
 **Modifying status priority:**
 Edit the conditional logic order in `DiscordRPCManager.updateStatusFromStats()`
@@ -146,4 +165,24 @@ Edit the conditional logic order in `DiscordRPCManager.updateStatusFromStats()`
 Users configure this via Settings tab. Default is 5 seconds (`DEFAULT_UPDATE_INTERVAL`).
 
 **Debugging Discord IPC issues:**
-Check Burp's extension output/error streams. The `IPCListener` logs connection events.
+1. Check the built-in log viewer in the Burpcord tab
+2. Check Burp's extension output/error streams
+3. The `IPCListener` logs connection events
+
+**Adding log entries:**
+Call `BurpcordSettingsTab.log("message")` from anywhere in the codebase.
+
+## File Structure
+
+```tree
+src/main/java/com/burpcord/
+├── BurpcordExtension.java      # Entry point, registers all handlers
+├── BurpcordConfig.java         # Configuration persistence
+├── DiscordRPCManager.java      # Core RPC logic and Montoya integrations
+├── BurpcordSettingsTab.java    # GUI tab with settings and log viewer
+├── BurpcordProxyHandler.java   # Proxy request/response tracking
+├── BurpcordScannerListener.java # Scanner activity monitoring
+├── BurpcordRepeaterListener.java # Repeater activity detection
+├── BurpcordIntruderListener.java # Intruder attack tracking
+└── BurpcordWebSocketListener.java # WebSocket message tracking
+```
