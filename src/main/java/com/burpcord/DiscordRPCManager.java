@@ -45,6 +45,10 @@ public class DiscordRPCManager {
     private final AtomicInteger repeaterRequests = new AtomicInteger(0);
     private long lastRepeaterActivity = 0;
 
+    // Intruder stats
+    private final AtomicInteger intruderRequests = new AtomicInteger(0);
+    private long lastIntruderActivity = 0;
+
     // Status rotation
     private int statusIndex = 0;
 
@@ -174,6 +178,12 @@ public class DiscordRPCManager {
         lastRepeaterActivity = System.currentTimeMillis();
     }
 
+    // Intruder methods
+    public void markIntruderActivity() {
+        intruderRequests.incrementAndGet();
+        lastIntruderActivity = System.currentTimeMillis();
+    }
+
     public void restartScheduler() {
         stopPeriodicUpdates();
         startPeriodicUpdates();
@@ -237,6 +247,11 @@ public class DiscordRPCManager {
             activeStatuses.add(String.format("Testing in Repeater - %d requests", repeaterRequests.get()));
         }
 
+        // 5. Check Intruder (Active in last 60s)
+        if ((currentTime - lastIntruderActivity < 60000) && config.isShowIntruder()) {
+            activeStatuses.add(String.format("Intruder Attack - %d requests", intruderRequests.get()));
+        }
+
         // Default if nothing else
         if (activeStatuses.isEmpty()) {
             updatePresence("Using Burp Suite");
@@ -249,7 +264,7 @@ public class DiscordRPCManager {
     }
 
     public void updatePresence(String details) {
-        if (!config.isFeatureEnabled("rpc_enabled")) {
+        if (!config.isRpcEnabled()) {
             return;
         }
 
@@ -259,8 +274,8 @@ public class DiscordRPCManager {
                 builder.setDetails(details)
                         .setLargeImage("burp", "Burp Suite")
                         .setStartTimestamp(startTime); // Use persistent start time
-                // Set state as well
-                builder.setState("Security Researching");
+                // Set state from config (user customizable)
+                builder.setState(config.getCustomState());
 
                 RichPresence rp = builder.build();
 

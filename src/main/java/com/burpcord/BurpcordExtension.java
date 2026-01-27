@@ -32,6 +32,9 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
         BurpcordRepeaterListener repeaterListener = new BurpcordRepeaterListener(manager);
         api.http().registerHttpHandler(repeaterListener);
 
+        BurpcordIntruderListener intruderListener = new BurpcordIntruderListener(manager);
+        api.http().registerHttpHandler(intruderListener);
+
         // Register Settings Tab
         api.userInterface().registerSuiteTab("Burpcord", new BurpcordSettingsTab(api, config, manager));
 

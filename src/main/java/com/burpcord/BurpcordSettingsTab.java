@@ -13,10 +13,13 @@ public class BurpcordSettingsTab extends JPanel {
 
     private final JTextField appIdField;
     private final JSpinner intervalSpinner;
+    private final JCheckBox rpcEnabledCheck;
     private final JCheckBox showInterceptCheck;
     private final JCheckBox showScanCheck;
     private final JCheckBox showProxyCheck;
     private final JCheckBox showRepeaterCheck;
+    private final JCheckBox showIntruderCheck;
+    private final JTextField customStateField;
 
     public BurpcordSettingsTab(MontoyaApi api, BurpcordConfig config, DiscordRPCManager rpcManager) {
         this.api = api;
@@ -26,6 +29,12 @@ public class BurpcordSettingsTab extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // RPC Master Toggle (at top)
+        rpcEnabledCheck = new JCheckBox("Enable Discord Rich Presence", config.isRpcEnabled());
+        rpcEnabledCheck.addActionListener(e -> config.setRpcEnabled(rpcEnabledCheck.isSelected()));
+        add(rpcEnabledCheck);
+        add(Box.createVerticalStrut(10));
 
         // App ID
         JPanel appIdPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -44,6 +53,16 @@ public class BurpcordSettingsTab extends JPanel {
         intervalSpinner.addChangeListener(e -> updateInterval());
         intervalPanel.add(intervalSpinner);
         add(intervalPanel);
+
+        // Custom State Text
+        JPanel statePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        statePanel.add(new JLabel("Custom State Text: "));
+        customStateField = new JTextField(config.getCustomState(), 25);
+        statePanel.add(customStateField);
+        JButton updateStateBtn = new JButton("Update");
+        updateStateBtn.addActionListener(e -> config.setCustomState(customStateField.getText().trim()));
+        statePanel.add(updateStateBtn);
+        add(statePanel);
 
         // Features Toggles
         add(Box.createVerticalStrut(10));
@@ -64,6 +83,10 @@ public class BurpcordSettingsTab extends JPanel {
         showRepeaterCheck = new JCheckBox("Show Repeater Status", config.isShowRepeater());
         showRepeaterCheck.addActionListener(e -> config.setShowRepeater(showRepeaterCheck.isSelected()));
         add(showRepeaterCheck);
+
+        showIntruderCheck = new JCheckBox("Show Intruder Status", config.isShowIntruder());
+        showIntruderCheck.addActionListener(e -> config.setShowIntruder(showIntruderCheck.isSelected()));
+        add(showIntruderCheck);
 
         // Save Button (Auto-save is implemented on action listeners, but a button is
         // reassuring)
@@ -94,6 +117,7 @@ public class BurpcordSettingsTab extends JPanel {
 
     private void saveAll() {
         updateAppId();
+        config.setCustomState(customStateField.getText().trim());
         // Toggles are auto-saved.
     }
 }

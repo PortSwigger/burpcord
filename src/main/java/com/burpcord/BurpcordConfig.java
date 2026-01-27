@@ -9,9 +9,13 @@ public class BurpcordConfig {
     private static final String KEY_SHOW_SCAN = "burpcord_show_scan";
     private static final String KEY_SHOW_REPEATER = "burpcord_show_repeater";
     private static final String KEY_SHOW_PROXY = "burpcord_show_proxy";
+    private static final String KEY_RPC_ENABLED = "burpcord_rpc_enabled";
+    private static final String KEY_SHOW_INTRUDER = "burpcord_show_intruder";
+    private static final String KEY_CUSTOM_STATE = "burpcord_custom_state";
 
     private static final String DEFAULT_APP_ID = "1457789708753965206";
     private static final int DEFAULT_UPDATE_INTERVAL = 5;
+    private static final String DEFAULT_STATE = "Security Researching";
 
     public BurpcordConfig(burp.api.montoya.persistence.Preferences preferences) {
         this.preferences = preferences;
@@ -45,6 +49,15 @@ public class BurpcordConfig {
         preferences.setBoolean(featureKey, enabled);
     }
 
+    // RPC Master Toggle
+    public boolean isRpcEnabled() {
+        return isFeatureEnabled(KEY_RPC_ENABLED);
+    }
+
+    public void setRpcEnabled(boolean enabled) {
+        setFeatureEnabled(KEY_RPC_ENABLED, enabled);
+    }
+
     public boolean isShowIntercept() {
         return isFeatureEnabled(KEY_SHOW_INTERCEPT);
     }
@@ -75,5 +88,23 @@ public class BurpcordConfig {
 
     public void setShowProxy(boolean enabled) {
         setFeatureEnabled(KEY_SHOW_PROXY, enabled);
+    }
+
+    public boolean isShowIntruder() {
+        return isFeatureEnabled(KEY_SHOW_INTRUDER);
+    }
+
+    public void setShowIntruder(boolean enabled) {
+        setFeatureEnabled(KEY_SHOW_INTRUDER, enabled);
+    }
+
+    // Custom State Text
+    public String getCustomState() {
+        String state = preferences.getString(KEY_CUSTOM_STATE);
+        return (state == null || state.isBlank()) ? DEFAULT_STATE : state;
+    }
+
+    public void setCustomState(String state) {
+        preferences.setString(KEY_CUSTOM_STATE, state);
     }
 }
