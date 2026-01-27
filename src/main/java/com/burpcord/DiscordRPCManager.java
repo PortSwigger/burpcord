@@ -26,6 +26,7 @@ public class DiscordRPCManager {
 
     private final AtomicInteger requestCount = new AtomicInteger(0);
     private final AtomicInteger responseCount = new AtomicInteger(0);
+
     // Intercept stats
     private final AtomicBoolean isIntercepting = new AtomicBoolean(false);
     private long lastInterceptTime = 0;
