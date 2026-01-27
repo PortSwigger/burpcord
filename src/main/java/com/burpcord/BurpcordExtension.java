@@ -33,7 +33,7 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
         api.http().registerHttpHandler(repeaterListener);
 
         // Register Settings Tab
-        api.userInterface().registerSuiteTab("Burpcord", new BurpcordSettingsTab(config, manager));
+        api.userInterface().registerSuiteTab("Burpcord", new BurpcordSettingsTab(api, config, manager));
 
         manager.initialize();
     }

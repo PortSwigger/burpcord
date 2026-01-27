@@ -1,10 +1,13 @@
 package com.burpcord;
 
+import burp.api.montoya.MontoyaApi;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class BurpcordSettingsTab extends JPanel {
 
+    private final MontoyaApi api;
     private final BurpcordConfig config;
     private final DiscordRPCManager rpcManager;
 
@@ -15,7 +18,8 @@ public class BurpcordSettingsTab extends JPanel {
     private final JCheckBox showProxyCheck;
     private final JCheckBox showRepeaterCheck;
 
-    public BurpcordSettingsTab(BurpcordConfig config, DiscordRPCManager rpcManager) {
+    public BurpcordSettingsTab(MontoyaApi api, BurpcordConfig config, DiscordRPCManager rpcManager) {
+        this.api = api;
         this.config = config;
         this.rpcManager = rpcManager;
 
@@ -76,7 +80,9 @@ public class BurpcordSettingsTab extends JPanel {
             // Re-initialize manager to pick up new ID (Requires shutdown/init)
             rpcManager.shutdown();
             rpcManager.initialize();
-            JOptionPane.showMessageDialog(this, "App ID updated and RPC reconnected.");
+            JOptionPane.showMessageDialog(
+                    api.userInterface().swingUtils().suiteFrame(),
+                    "App ID updated and RPC reconnected.");
         }
     }
 

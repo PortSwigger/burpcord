@@ -181,7 +181,13 @@ public class DiscordRPCManager {
     private void startPeriodicUpdates() {
         if (scheduler == null || scheduler.isShutdown()) {
             scheduler = Executors.newSingleThreadScheduledExecutor();
-            scheduler.scheduleAtFixedRate(this::updateStatusFromStats, 0, config.getUpdateInterval(), TimeUnit.SECONDS);
+            scheduler.scheduleAtFixedRate(() -> {
+                try {
+                    updateStatusFromStats();
+                } catch (Exception e) {
+                    api.logging().logToError("Error in status update: " + e.getMessage());
+                }
+            }, 0, config.getUpdateInterval(), TimeUnit.SECONDS);
         }
     }
 
