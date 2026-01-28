@@ -2,9 +2,19 @@
 
 This file provides guidance to AI agents and WARP (warp.dev) when working with code in this repository.
 
+## Documentation References
+
+- See `@docs/portswigger/CLAUDE.md` for official Montoya API guidance
+- See `@docs/portswigger/bapp-store-requirements.md` for BApp Store submission criteria
+- See `@docs/portswigger/development-best-practices.md` for development guidelines
+- See `@docs/portswigger/montoya-api-examples.md` for API code patterns
+- See `@docs/portswigger/resources.md` for external links
+
 ## Project Overview
 
 Burpcord is a Burp Suite extension that integrates Discord Rich Presence functionality. It displays real-time Burp Suite activity on Discord profiles, including security testing status, scan results, tool usage, and advanced metrics via the Montoya API. The extension is built using Java 21 and the Burp Suite Montoya API.
+
+**Current Version:** 1.4.0
 
 ## Build System
 

@@ -102,6 +102,15 @@ public class DiscordRPCManager {
     // Status rotation
     private int statusIndex = 0;
 
+    // Caching for large project performance (BApp Store criterion #9)
+    private static final long CACHE_TTL_MS = 30_000; // 30 seconds
+    private int cachedSiteMapSize = 0;
+    private long lastSiteMapCacheTime = 0;
+    private int cachedProxyHistorySize = 0;
+    private long lastProxyHistoryCacheTime = 0;
+    private int cachedScopeCount = 0;
+    private long lastScopeCacheTime = 0;
+
     // Persistent start time for Discord timestamp
     private long startTime = 0;
 
@@ -268,38 +277,66 @@ public class DiscordRPCManager {
         }
     }
 
+    /**
+     * Gets proxy history size with 30s caching for large project performance.
+     * Per BApp Store criterion #9: proxy().history() can return huge results.
+     */
     private int getProxyHistorySize() {
-        try {
-            return api.proxy().history().size();
-        } catch (Exception e) {
-            return requestCount.get();
+        long now = System.currentTimeMillis();
+        if (now - lastProxyHistoryCacheTime > CACHE_TTL_MS) {
+            try {
+                cachedProxyHistorySize = api.proxy().history().size();
+            } catch (Exception e) {
+                cachedProxyHistorySize = requestCount.get();
+            }
+            lastProxyHistoryCacheTime = now;
         }
+        return cachedProxyHistorySize;
     }
 
+    /**
+     * Gets site map size with 30s caching for large project performance.
+     * Per BApp Store criterion #9: siteMap().requestResponses() can return huge
+     * results.
+     */
     private int getSiteMapSize() {
-        try {
-            return api.siteMap().requestResponses().size();
-        } catch (Exception e) {
-            return 0;
+        long now = System.currentTimeMillis();
+        if (now - lastSiteMapCacheTime > CACHE_TTL_MS) {
+            try {
+                cachedSiteMapSize = api.siteMap().requestResponses().size();
+            } catch (Exception e) {
+                cachedSiteMapSize = 0;
+            }
+            lastSiteMapCacheTime = now;
         }
+        return cachedSiteMapSize;
     }
 
+    /**
+     * Gets unique in-scope target count with 30s caching for large project
+     * performance.
+     */
     private int getScopeTargetCount() {
-        try {
-            return (int) api.proxy().history().stream()
-                    .map(r -> r.finalRequest().httpService().host())
-                    .distinct()
-                    .filter(host -> {
-                        try {
-                            return api.scope().isInScope("https://" + host);
-                        } catch (Exception e) {
-                            return false;
-                        }
-                    })
-                    .count();
-        } catch (Exception e) {
-            return 0;
+        long now = System.currentTimeMillis();
+        if (now - lastScopeCacheTime > CACHE_TTL_MS) {
+            try {
+                cachedScopeCount = (int) api.proxy().history().stream()
+                        .map(r -> r.finalRequest().httpService().host())
+                        .distinct()
+                        .filter(host -> {
+                            try {
+                                return api.scope().isInScope("https://" + host);
+                            } catch (Exception e) {
+                                return false;
+                            }
+                        })
+                        .count();
+            } catch (Exception e) {
+                cachedScopeCount = 0;
+            }
+            lastScopeCacheTime = now;
         }
+        return cachedScopeCount;
     }
 
     private int getCollaboratorHits() {

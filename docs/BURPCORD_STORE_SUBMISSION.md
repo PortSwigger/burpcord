@@ -22,6 +22,17 @@ Whether you're intercepting traffic, running scans, fuzzing with Intruder, or te
 - **Configurable Features** - Toggle individual status types on/off
 - **Persistent Settings** - All preferences saved between sessions
 
+### v1.3+ Features (Montoya API)
+- **Site Map Tracking** - Displays mapped endpoint count from Burp's site map
+- **Scope Tracking** - Shows unique in-scope target count
+- **Collaborator Integration** - Displays OOB interaction hits (Pro only)
+- **WebSocket Monitoring** - Tracks WebSocket message counts
+- **Built-in Log Viewer** - View extension events and Discord connection status
+
+### v1.4.0 Performance Improvements
+- **Large Project Optimization** - Cached API calls with 30s TTL for improved performance
+- **BApp Store Compliance** - Full compliance with PortSwigger submission criteria
+
 ---
 
 ## Usage Instructions
@@ -69,9 +80,18 @@ If you want custom branding for your presence:
 
 ## Requirements
 
-- Burp Suite (Community or Professional)
+- Burp Suite (Community or Professional) 2023.1 or later (Montoya API)
 - Discord desktop client running locally
 - Java 21 or higher
+
+---
+
+## Version History
+
+- **v1.4.0** - Performance optimization with cached API calls, BApp Store compliance
+- **v1.3.x** - Montoya API integration, Site Map, Scope, Collaborator, WebSockets
+- **v1.2.x** - Custom state text, RPC toggle, configurable features
+- **v1.0.0** - Initial release with basic Discord Rich Presence
 
 ---
 
