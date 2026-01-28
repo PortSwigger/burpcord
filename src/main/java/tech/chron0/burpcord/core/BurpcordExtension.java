@@ -1,6 +1,7 @@
 package tech.chron0.burpcord.core;
 
 import tech.chron0.burpcord.config.BurpcordConfig;
+import tech.chron0.burpcord.discord.ActivityProvider;
 import tech.chron0.burpcord.discord.DiscordRPCManager;
 import tech.chron0.burpcord.listeners.*;
 import tech.chron0.burpcord.listeners.providers.*;
@@ -10,6 +11,9 @@ import tech.chron0.burpcord.ui.BurpcordSettingsTab;
 import burp.api.montoya.BurpExtension;
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.extension.ExtensionUnloadingHandler;
+
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.SwingUtilities;
 
@@ -105,7 +109,7 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
         private void initializeComponents(MontoyaApi api, BurpcordConfig config, DiscordRPCManager rpcManager) {
                 // Initialize all components - Priority is now defined within each class via
                 // getPriority()
-                java.util.List<tech.chron0.burpcord.discord.ActivityProvider> components = java.util.Arrays.asList(
+                List<ActivityProvider> components = Arrays.asList(
                                 new BurpcordProxyHandler(config),
                                 new BurpcordScannerListener(config),
                                 new BurpcordRepeaterListener(config),
@@ -119,7 +123,7 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
                 rpcManager.registerProviders(components);
 
                 // Auto-register Burp Components
-                for (tech.chron0.burpcord.discord.ActivityProvider component : components) {
+                for (ActivityProvider component : components) {
                         if (component instanceof BurpComponent) {
                                 ((BurpComponent) component).register(api);
                         }
