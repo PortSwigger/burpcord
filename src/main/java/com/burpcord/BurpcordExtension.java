@@ -89,22 +89,7 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
                 api.userInterface().registerSuiteTab("Burpcord", new BurpcordSettingsTab(api, config, manager));
 
                 // Log ASCII banner to built-in log viewer (AFTER tab is registered!)
-                BurpcordSettingsTab.log("");
-                BurpcordSettingsTab.log(
-                                " :::::::::  :::    ::: :::::::::  :::::::::   ::::::::   ::::::::  :::::::::  :::::::::  ");
-                BurpcordSettingsTab.log(
-                                " :+:    :+: :+:    :+: :+:    :+: :+:    :+: :+:    :+: :+:    :+: :+:    :+: :+:    :+: ");
-                BurpcordSettingsTab.log(
-                                " +:+    +:+ +:+    +:+ +:+    +:+ +:+    +:+ +:+        +:+    +:+ +:+    +:+ +:+    +:+ ");
-                BurpcordSettingsTab.log(
-                                " +#++:++#+  +#+    +:+ +#++:++#:  +#++:++#+  +#+        +#+    +:+ +#++:++#:  +#+    +:+ ");
-                BurpcordSettingsTab.log(
-                                " +#+    +#+ +#+    +#+ +#+    +#+ +#+        +#+        +#+    +#+ +#+    +#+ +#+    +#+ ");
-                BurpcordSettingsTab.log(
-                                " #########   ########  ###    ### ###         ########   ########  ###    ### #########  ");
-                BurpcordSettingsTab.log("  Discord Rich Presence for Burp Suite.");
-                BurpcordSettingsTab.log("");
-                BurpcordSettingsTab.log("Burpcord initialized.");
+                logBanner();
 
                 // Log enabled features to built-in log viewer
                 logEnabledFeatures(config);
@@ -135,7 +120,20 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
         }
 
         /**
-         * Logs enabled features to the built-in log viewer with fancy formatting.
+         * Logs the ASCII banner to the log viewer.
+         */
+        public static void logBanner() {
+                BurpcordSettingsTab.log("");
+                BurpcordSettingsTab.log("╔══════════════════════════════════════╗");
+                BurpcordSettingsTab.log(
+                                "║          B U R P C O R D                                                            ║");
+                BurpcordSettingsTab.log("╚══════════════════════════════════════╝");
+                BurpcordSettingsTab.log(" Discord Rich Presence for Burp Suite.");
+                BurpcordSettingsTab.log("");
+        }
+
+        /**
+         * Logs enabled features to the built-in log viewer.
          * 
          * @param config The configuration to check for enabled features
          */

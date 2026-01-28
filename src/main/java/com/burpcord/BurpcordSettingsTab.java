@@ -169,6 +169,7 @@ public class BurpcordSettingsTab extends JPanel {
         applyFeaturesBtn.setToolTipText("Click to apply feature toggle changes to Discord");
         applyFeaturesBtn.addActionListener(e -> {
             logArea.setText("");
+            BurpcordExtension.logBanner();
             log("Applying feature changes...");
             logEnabledFeatures();
             if (rpcManager != null) {
