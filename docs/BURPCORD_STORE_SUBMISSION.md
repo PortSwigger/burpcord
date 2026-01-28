@@ -10,6 +10,7 @@ Whether you're intercepting traffic, running scans, fuzzing with Intruder, or te
 
 ## Key Features
 
+### Activity Tracking
 - **Real-Time Activity Tracking** - Automatically detects and displays your current Burp Suite activity
 - **Intercept Status** - Shows when you're actively intercepting proxy traffic with request count
 - **Scanner Integration** - Displays vulnerability counts (High/Medium severity findings)
@@ -17,20 +18,24 @@ Whether you're intercepting traffic, running scans, fuzzing with Intruder, or te
 - **Intruder Monitoring** - Shows ongoing fuzzing attacks with payload count
 - **Proxy Statistics** - Displays total proxied requests and responses
 - **Session Timer** - Shows how long you've been using Burp Suite
-- **Customizable State Text** - Set your own status message (e.g., "Bug Bounty Hunting")
-- **RPC Toggle** - Quickly enable/disable Discord presence without unloading the extension
-- **Configurable Features** - Toggle individual status types on/off
-- **Persistent Settings** - All preferences saved between sessions
 
-### v1.3+ Features (Montoya API)
+### Advanced Monitoring
 - **Site Map Tracking** - Displays mapped endpoint count from Burp's site map
 - **Scope Tracking** - Shows unique in-scope target count
 - **Collaborator Integration** - Displays OOB interaction hits (Pro only)
 - **WebSocket Monitoring** - Tracks WebSocket message counts
+
+### Customization & Configuration
+- **Customizable State Text** - Set your own status message (e.g., "Bug Bounty Hunting")
+- **RPC Toggle** - Quickly enable/disable Discord presence without unloading the extension
+- **Configurable Features** - Toggle individual status types on/off
+- **Persistent Settings** - All preferences saved between sessions
 - **Built-in Log Viewer** - View extension events and Discord connection status
 
-### v1.4.0 Performance Improvements
-- **Large Project Optimization** - Cached API calls with 30s TTL for improved performance
+### Architecture & Performance
+- **Modular Architecture** - Completely refactored codebase using the Provider pattern for stability and scalability
+- **Optimized Performance** - Smart caching (30s TTL) and priority-based updates ensure zero impact on Burp Suite
+- **Robust Connection** - Improved Discord RPC lifecycle management and connection stability
 - **BApp Store Compliance** - Full compliance with PortSwigger submission criteria
 
 ---
@@ -39,9 +44,9 @@ Whether you're intercepting traffic, running scans, fuzzing with Intruder, or te
 
 ### Installation
 
-1. Download the Burpcord JAR file
+1. Download the latest `burpcord-all.jar` from Releases (or build via `./gradlew shadowJar`)
 2. In Burp Suite, go to **Extensions** → **Installed**
-3. Click **Add** and select the downloaded JAR file
+3. Click **Add** and select the JAR file
 4. Ensure Discord is running on your computer
 5. Burpcord will automatically connect and display your status
 
@@ -88,14 +93,46 @@ If you want custom branding for your presence:
 
 ## Version History
 
-- **v1.5.0** - Complete UI redesign with tabbed Settings/About/Help, Burp theme integration
-- **v1.4.0** - Performance optimization with cached API calls, BApp Store compliance
-- **v1.3.x** - Montoya API integration, Site Map, Scope, Collaborator, WebSockets
-- **v1.2.x** - Custom state text, RPC toggle, configurable features
-- **v1.0.0** - Initial release with basic Discord Rich Presence
+### [v2.1.0] - 2026-01-28
+- **Major Refactoring**: Introduced component priority system and OOP registration logic
+- **Shadow Jar**: Improved build process with dependency relocation to fix runtime crashes
+- **RPC Stability**: Fixes for invalid ActivityType and UI sync race conditions
+- **Structure**: Organized codebase into providers and handlers subpackages
+
+### [v2.0.0] - 2026-01-28
+- **Modular UI**: Decomposed settings tab into Settings, Log, About, and Help panels
+- **New Providers**: Site Map, Scope, and Collaborator tracking support
+- **Architecture**: Implemented ActivityProvider pattern for decentralized logic
+- **Logging**: ASCII art banners and improved console output
+
+### [v1.5.2] - 2026-01-27
+- **Global RPC Switch**: Master toggle to enable/disable Discord RPC without unloading
+- **Rich Presence Toggles**: Granular control to show/hide specific Burp tools
+
+### [v1.4.0] - 2026-01-27
+- **Performance**: Site Map caching for large projects
+- **Compliance**: Updates for BApp Store requirements
+
+### [v1.3.2] - 2026-01-27
+- **UI & Logging**: Enhanced logs and context for custom logging section
+
+### [v1.3.1] - 2026-01-27
+- **Bug Fixes**: Cleanup of RPC presence before disconnection
+
+### [v1.3.0] - 2026-01-27
+- **New Features**: WebSocket monitoring, Burp version/edition/scope tracking
+
+### [v1.2.0] - 2026-01-27
+- **Features**: Intruder tracking, custom state text, RPC toggle
+
+### [v1.1.0] - 2026-01-27
+- **Technical**: Improved GUI threading and modal handling
+
+### [v1.0.0] - 2026-01-05
+- **Initial Release**: Basic Discord RPC, core tool tracking (Proxy, Scanner, Repeater, Intruder)
 
 ---
 
 ## Privacy Note
 
-Burpcord only displays activity type and statistics. It does **not** share target URLs, request contents, or any sensitive testing data with Discord.
+Burpcord only displays activity type and statistics. It does **not** share target URLs, request contents, or any sensitive testing data with Discord, nor does it store any kind of user or system data.
