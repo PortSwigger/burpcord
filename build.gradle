@@ -77,3 +77,13 @@ mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
 }
+
+publishing {
+    repositories {
+        maven {
+            name = "githubPackages"
+            url = "https://maven.pkg.github.com/jondmarien/Burpcord"
+            credentials(PasswordCredentials)
+        }
+    }
+}
