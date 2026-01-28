@@ -1,51 +1,43 @@
 package tech.chron0.burpcord.listeners;
 
-import tech.chron0.burpcord.discord.DiscordRPCManager;
+import tech.chron0.burpcord.config.BurpcordConfig;
+import tech.chron0.burpcord.discord.ActivityProvider;
 
-import burp.api.montoya.core.ToolSource;
 import burp.api.montoya.core.ToolType;
 import burp.api.montoya.http.handler.HttpHandler;
 import burp.api.montoya.http.handler.HttpRequestToBeSent;
-import burp.api.montoya.http.handler.RequestToBeSentAction;
 import burp.api.montoya.http.handler.HttpResponseReceived;
+import burp.api.montoya.http.handler.RequestToBeSentAction;
 import burp.api.montoya.http.handler.ResponseReceivedAction;
 
+import com.jagrosh.discordipc.entities.RichPresence;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
- * Handles Burp Suite Repeater events for Discord Rich Presence updates.
- * 
+ * <h1>Repeater Listener</h1>
  * <p>
- * This handler detects HTTP requests originating from the Repeater tool
- * and notifies the {@link DiscordRPCManager} of manual testing activity.
- * </p>
- * 
- * <p>
- * Repeater activity is tracked with a 60-second timeout, so the status
- * will automatically clear after inactivity.
+ * Tracks manual testing activity within the Burp Repeater tool.
+ * Updates activity status based on request frequency.
  * </p>
  * 
  * @author Jon Marien
- * @version 1.3
- * @see DiscordRPCManager
+ * @version 2.0.0
  */
-public class BurpcordRepeaterListener implements HttpHandler {
+public class BurpcordRepeaterListener implements HttpHandler, ActivityProvider {
 
-    /** Reference to the RPC manager for status updates. */
-    private final DiscordRPCManager manager;
+    private final BurpcordConfig config;
+    private final AtomicInteger requestCount = new AtomicInteger(0);
+    private long lastActivityTime = 0;
 
-    /**
-     * Creates a new Repeater listener.
-     * 
-     * @param manager The Discord RPC manager to notify of Repeater activity
-     */
-    public BurpcordRepeaterListener(DiscordRPCManager manager) {
-        this.manager = manager;
+    public BurpcordRepeaterListener(BurpcordConfig config) {
+        this.config = config;
     }
 
     @Override
     public RequestToBeSentAction handleHttpRequestToBeSent(HttpRequestToBeSent requestToBeSent) {
-        ToolSource toolSource = requestToBeSent.toolSource();
-        if (toolSource.isFromTool(ToolType.REPEATER)) {
-            manager.markRepeaterActivity();
+        if (requestToBeSent.toolSource().isFromTool(ToolType.REPEATER)) {
+            requestCount.incrementAndGet();
+            lastActivityTime = System.currentTimeMillis();
         }
         return RequestToBeSentAction.continueWith(requestToBeSent);
     }
@@ -53,5 +45,19 @@ public class BurpcordRepeaterListener implements HttpHandler {
     @Override
     public ResponseReceivedAction handleHttpResponseReceived(HttpResponseReceived responseReceived) {
         return ResponseReceivedAction.continueWith(responseReceived);
+    }
+
+    @Override
+    public boolean isActive() {
+        if (!config.isShowRepeater())
+            return false;
+        return (System.currentTimeMillis() - lastActivityTime) < 60000;
+    }
+
+    @Override
+    public void updatePresence(RichPresence.Builder builder) {
+        builder.setDetails("Manual Testing (Repeater)");
+        builder.setState("Requests sent: " + requestCount.get());
+        builder.setSmallImage("repeater", "Repeater");
     }
 }

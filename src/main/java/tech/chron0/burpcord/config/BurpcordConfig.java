@@ -1,30 +1,26 @@
 package tech.chron0.burpcord.config;
 
 /**
- * Configuration management for the Burpcord extension.
- * 
+ * <h1>Configuration Management</h1>
  * <p>
- * This class handles persistence of all user preferences using Burp Suite's
- * built-in Preferences API. Settings are automatically saved and restored
- * between Burp Suite sessions.
+ * Manages configuration for the Burpcord extension, utilizing Burp Suite's
+ * built-in {@code Preferences} API for persistence logic.
  * </p>
  * 
- * <h2>Configuration Options</h2>
+ * <h2>Stored Preferences</h2>
  * <ul>
- * <li><b>Discord App ID</b>: The Application ID from Discord Developer
- * Portal</li>
- * <li><b>Update Interval</b>: How often to update Discord status (in
- * seconds)</li>
- * <li><b>Custom State</b>: User-defined status text shown in Discord</li>
- * <li><b>Feature Toggles</b>: Enable/disable individual status types</li>
+ * <li><b>App ID:</b> Custom Discord Application ID.</li>
+ * <li><b>Update Interval:</b> Frequency of Rich Presence updates.</li>
+ * <li><b>Custom State:</b> User-defined status message.</li>
+ * <li><b>Feature Toggles:</b> Individual toggles for displaying specific Burp
+ * tools.</li>
  * </ul>
  * 
  * @author Jon Marien
- * @version 1.3
+ * @version 2.0.0
  */
 public class BurpcordConfig {
 
-    /** Burp Suite preferences storage instance. */
     private final burp.api.montoya.persistence.Preferences preferences;
 
     // Preference keys
@@ -32,36 +28,28 @@ public class BurpcordConfig {
     private static final String KEY_UPDATE_INTERVAL = "burpcord_update_interval";
     private static final String KEY_SHOW_INTERCEPT = "burpcord_show_intercept";
     private static final String KEY_SHOW_SCAN = "burpcord_show_scan";
-    private static final String KEY_SHOW_REPEATER = "burpcord_show_repeater";
     private static final String KEY_SHOW_PROXY = "burpcord_show_proxy";
-    private static final String KEY_RPC_ENABLED = "burpcord_rpc_enabled";
+    private static final String KEY_SHOW_REPEATER = "burpcord_show_repeater";
     private static final String KEY_SHOW_INTRUDER = "burpcord_show_intruder";
-    private static final String KEY_CUSTOM_STATE = "burpcord_custom_state";
+    private static final String KEY_SHOW_WEBSOCKETS = "burpcord_show_websockets";
     private static final String KEY_SHOW_SITEMAP = "burpcord_show_sitemap";
     private static final String KEY_SHOW_SCOPE = "burpcord_show_scope";
     private static final String KEY_SHOW_COLLABORATOR = "burpcord_show_collaborator";
-    private static final String KEY_SHOW_WEBSOCKETS = "burpcord_show_websockets";
+    private static final String KEY_DEBUG_MODE = "burpcord_debug_mode";
+    private static final String KEY_CUSTOM_STATE = "burpcord_custom_state";
+    private static final String KEY_RPC_ENABLED = "burpcord_rpc_enabled";
 
-    // Default values
-    /** Default Discord Application ID. */
-    private static final String DEFAULT_APP_ID = "1457789708753965206";
-    /** Default status update interval in seconds. */
-    private static final int DEFAULT_UPDATE_INTERVAL = 5;
-    /** Default state text shown in Discord. */
-    private static final String DEFAULT_STATE = "Security Researching";
+    // Defaults
+    private static final String DEFAULT_APP_ID = "1328087961230639207";
+    private static final int DEFAULT_UPDATE_INTERVAL = 30;
 
-    /**
-     * Creates a new configuration instance.
-     * 
-     * @param preferences The Burp Suite preferences API instance for persistence
-     */
     public BurpcordConfig(burp.api.montoya.persistence.Preferences preferences) {
         this.preferences = preferences;
     }
 
     public String getAppId() {
-        String appId = preferences.getString(KEY_APP_ID);
-        return (appId == null || appId.isBlank()) ? DEFAULT_APP_ID : appId;
+        String id = preferences.getString(KEY_APP_ID);
+        return (id == null || id.isEmpty()) ? DEFAULT_APP_ID : id;
     }
 
     public void setAppId(String appId) {
@@ -70,112 +58,115 @@ public class BurpcordConfig {
 
     public int getUpdateInterval() {
         Integer val = preferences.getInteger(KEY_UPDATE_INTERVAL);
-        return val == null ? DEFAULT_UPDATE_INTERVAL : val;
+        return (val == null) ? DEFAULT_UPDATE_INTERVAL : val;
     }
 
     public void setUpdateInterval(int seconds) {
         preferences.setInteger(KEY_UPDATE_INTERVAL, seconds);
     }
 
-    public boolean isFeatureEnabled(String featureKey) {
-        // Default everything to true
-        Boolean val = preferences.getBoolean(featureKey);
-        return val == null ? true : val;
-    }
-
-    public void setFeatureEnabled(String featureKey, boolean enabled) {
-        preferences.setBoolean(featureKey, enabled);
-    }
-
-    // RPC Master Toggle
-    public boolean isRpcEnabled() {
-        return isFeatureEnabled(KEY_RPC_ENABLED);
-    }
-
-    public void setRpcEnabled(boolean enabled) {
-        setFeatureEnabled(KEY_RPC_ENABLED, enabled);
-    }
-
     public boolean isShowIntercept() {
-        return isFeatureEnabled(KEY_SHOW_INTERCEPT);
+        return getBoolean(KEY_SHOW_INTERCEPT, true);
     }
 
-    public void setShowIntercept(boolean enabled) {
-        setFeatureEnabled(KEY_SHOW_INTERCEPT, enabled);
+    public void setShowIntercept(boolean value) {
+        setBoolean(KEY_SHOW_INTERCEPT, value);
     }
 
     public boolean isShowScan() {
-        return isFeatureEnabled(KEY_SHOW_SCAN);
+        return getBoolean(KEY_SHOW_SCAN, true);
     }
 
-    public void setShowScan(boolean enabled) {
-        setFeatureEnabled(KEY_SHOW_SCAN, enabled);
-    }
-
-    public boolean isShowRepeater() {
-        return isFeatureEnabled(KEY_SHOW_REPEATER);
-    }
-
-    public void setShowRepeater(boolean enabled) {
-        setFeatureEnabled(KEY_SHOW_REPEATER, enabled);
+    public void setShowScan(boolean value) {
+        setBoolean(KEY_SHOW_SCAN, value);
     }
 
     public boolean isShowProxy() {
-        return isFeatureEnabled(KEY_SHOW_PROXY);
+        return getBoolean(KEY_SHOW_PROXY, true);
     }
 
-    public void setShowProxy(boolean enabled) {
-        setFeatureEnabled(KEY_SHOW_PROXY, enabled);
+    public void setShowProxy(boolean value) {
+        setBoolean(KEY_SHOW_PROXY, value);
+    }
+
+    public boolean isShowRepeater() {
+        return getBoolean(KEY_SHOW_REPEATER, true);
+    }
+
+    public void setShowRepeater(boolean value) {
+        setBoolean(KEY_SHOW_REPEATER, value);
     }
 
     public boolean isShowIntruder() {
-        return isFeatureEnabled(KEY_SHOW_INTRUDER);
+        return getBoolean(KEY_SHOW_INTRUDER, true);
     }
 
-    public void setShowIntruder(boolean enabled) {
-        setFeatureEnabled(KEY_SHOW_INTRUDER, enabled);
-    }
-
-    // Custom State Text
-    public String getCustomState() {
-        String state = preferences.getString(KEY_CUSTOM_STATE);
-        return (state == null || state.isBlank()) ? DEFAULT_STATE : state;
-    }
-
-    public void setCustomState(String state) {
-        preferences.setString(KEY_CUSTOM_STATE, state);
-    }
-
-    // v1.3 - Montoya API Features
-    public boolean isShowSiteMap() {
-        return isFeatureEnabled(KEY_SHOW_SITEMAP);
-    }
-
-    public void setShowSiteMap(boolean enabled) {
-        setFeatureEnabled(KEY_SHOW_SITEMAP, enabled);
-    }
-
-    public boolean isShowScope() {
-        return isFeatureEnabled(KEY_SHOW_SCOPE);
-    }
-
-    public void setShowScope(boolean enabled) {
-        setFeatureEnabled(KEY_SHOW_SCOPE, enabled);
-    }
-
-    public boolean isShowCollaborator() {
-        return isFeatureEnabled(KEY_SHOW_COLLABORATOR);
-    }
-
-    public void setShowCollaborator(boolean enabled) {
-        setFeatureEnabled(KEY_SHOW_COLLABORATOR, enabled);
+    public void setShowIntruder(boolean value) {
+        setBoolean(KEY_SHOW_INTRUDER, value);
     }
 
     public boolean isShowWebSockets() {
-        return isFeatureEnabled(KEY_SHOW_WEBSOCKETS);
+        return getBoolean(KEY_SHOW_WEBSOCKETS, true);
     }
 
-    public void setShowWebSockets(boolean enabled) {
-        setFeatureEnabled(KEY_SHOW_WEBSOCKETS, enabled);
+    public void setShowWebSockets(boolean value) {
+        setBoolean(KEY_SHOW_WEBSOCKETS, value);
+    }
+
+    public boolean isShowSiteMap() {
+        return getBoolean(KEY_SHOW_SITEMAP, true);
+    }
+
+    public void setShowSiteMap(boolean value) {
+        setBoolean(KEY_SHOW_SITEMAP, value);
+    }
+
+    public boolean isShowScope() {
+        return getBoolean(KEY_SHOW_SCOPE, true);
+    }
+
+    public void setShowScope(boolean value) {
+        setBoolean(KEY_SHOW_SCOPE, value);
+    }
+
+    public boolean isShowCollaborator() {
+        return getBoolean(KEY_SHOW_COLLABORATOR, true);
+    }
+
+    public void setShowCollaborator(boolean value) {
+        setBoolean(KEY_SHOW_COLLABORATOR, value);
+    }
+
+    public boolean isDebugMode() {
+        return getBoolean(KEY_DEBUG_MODE, false);
+    }
+
+    public void setDebugMode(boolean value) {
+        setBoolean(KEY_DEBUG_MODE, value);
+    }
+
+    public String getCustomState() {
+        return preferences.getString(KEY_CUSTOM_STATE);
+    }
+
+    public void setCustomState(String value) {
+        preferences.setString(KEY_CUSTOM_STATE, value);
+    }
+
+    public boolean isRpcEnabled() {
+        return getBoolean(KEY_RPC_ENABLED, true);
+    }
+
+    public void setRpcEnabled(boolean value) {
+        setBoolean(KEY_RPC_ENABLED, value);
+    }
+
+    private boolean getBoolean(String key, boolean def) {
+        Boolean val = preferences.getBoolean(key);
+        return val == null ? def : val;
+    }
+
+    private void setBoolean(String key, boolean value) {
+        preferences.setBoolean(key, value);
     }
 }

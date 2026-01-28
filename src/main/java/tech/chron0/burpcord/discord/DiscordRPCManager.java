@@ -1,13 +1,8 @@
 package tech.chron0.burpcord.discord;
 
 import tech.chron0.burpcord.config.BurpcordConfig;
-import tech.chron0.burpcord.ui.BurpcordSettingsTab;
 import tech.chron0.burpcord.core.BurpcordConstants;
-
-import burp.api.montoya.MontoyaApi;
-import burp.api.montoya.collaborator.CollaboratorClient;
-
-import com.google.gson.JsonObject;
+import tech.chron0.burpcord.ui.BurpcordSettingsTab;
 
 import com.jagrosh.discordipc.IPCClient;
 import com.jagrosh.discordipc.IPCListener;
@@ -15,556 +10,219 @@ import com.jagrosh.discordipc.entities.Packet;
 import com.jagrosh.discordipc.entities.RichPresence;
 import com.jagrosh.discordipc.entities.User;
 import com.jagrosh.discordipc.entities.pipe.PipeStatus;
+import com.jagrosh.discordipc.entities.ActivityType;
+import com.google.gson.JsonObject;
 
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Central manager for Discord Rich Presence integration with Burp Suite.
- * 
+ * <h1>Discord RPC Manager</h1>
  * <p>
- * This class coordinates all Discord IPC communication and maintains
- * the state of various Burp Suite activities. It:
+ * Central controller for the Discord Rich Presence integration.
  * </p>
+ * 
+ * <h2>Functionality</h2>
  * <ul>
- * <li>Manages the Discord IPC client lifecycle (connect, disconnect,
- * reconnect)</li>
- * <li>Periodically updates Discord presence with current Burp activity</li>
- * <li>Tracks activity from multiple tools (Proxy, Scanner, Repeater, Intruder,
- * WebSockets)</li>
- * <li>Integrates with Montoya API for advanced metrics (Site Map, Scope,
- * Collaborator)</li>
- * <li>Rotates between active statuses when multiple tools are in use</li>
+ * <li><b>Connection Handling:</b> Manages the lifecycle of the IPC connection
+ * to the Discord client.</li>
+ * <li><b>Activity Registry:</b> Maintains a prioritized list of
+ * {@link ActivityProvider}s.</li>
+ * <li><b>Scheduler:</b> Periodically refreshes the user's presence based on the
+ * configured interval.</li>
  * </ul>
  * 
- * <h2>Thread Safety</h2>
- * <p>
- * All activity counters use {@link AtomicInteger} and {@link AtomicBoolean}
- * to ensure thread-safe updates from Burp Suite's event handlers.
- * </p>
- * 
- * <h2>Status Priority</h2>
- * <p>
- * When multiple activities are active, they are displayed in rotation.
- * Priority order: Intercept → Scanner → Proxy → Repeater → Intruder →
- * Site Map → Scope → Collaborator → WebSockets
- * </p>
- * 
  * @author Jon Marien
- * @version 1.3
- * @see BurpcordConfig
- * @see BurpcordSettingsTab
+ * @version 2.0.0
  */
 public class DiscordRPCManager {
 
-    /** Montoya API instance for accessing Burp Suite features. */
-    private final MontoyaApi api;
-    /** Configuration provider for user preferences. */
     private final BurpcordConfig config;
-    /** Discord IPC client for Rich Presence communication. */
+    private final List<ActivityProvider> providers = new ArrayList<>();
+
+    // IPC Client
     private IPCClient client;
-    /** Connection status flag. */
-    private boolean isConnected = false;
-
-    // Proxy activity tracking
-    private final AtomicInteger requestCount = new AtomicInteger(0);
-    private final AtomicInteger responseCount = new AtomicInteger(0);
-
-    // Intercept stats
-    private final AtomicBoolean isIntercepting = new AtomicBoolean(false);
-    private long lastInterceptTime = 0;
-
-    // Scanner stats
-    private final AtomicInteger vulnHigh = new AtomicInteger(0);
-    private final AtomicInteger vulnMedium = new AtomicInteger(0);
-    private final AtomicInteger vulnLow = new AtomicInteger(0);
-    private final AtomicInteger vulnInfo = new AtomicInteger(0);
-
-    private long lastActiveScanTime = 0;
-    private long lastPassiveScanTime = 0;
-
-    // Repeater stats
-    private final AtomicBoolean isRepeaterActive = new AtomicBoolean(false);
-    private final AtomicInteger repeaterRequests = new AtomicInteger(0);
-    private long lastRepeaterActivity = 0;
-
-    // Intruder stats
-    private final AtomicInteger intruderRequests = new AtomicInteger(0);
-    private long lastIntruderActivity = 0;
-
-    // WebSocket stats
-    private final AtomicInteger webSocketMessages = new AtomicInteger(0);
-    private long lastWebSocketActivity = 0;
-
-    // Collaborator (Pro only)
-    private CollaboratorClient collaboratorClient;
-    private boolean collaboratorAvailable = false;
-
-    // Status rotation
-    private int statusIndex = 0;
-
-    // Caching for large project performance (BApp Store criterion #9)
-    private static final long CACHE_TTL_MS = 30_000; // 30 seconds
-    private int cachedSiteMapSize = 0;
-    private long lastSiteMapCacheTime = 0;
-    private int cachedProxyHistorySize = 0;
-    private long lastProxyHistoryCacheTime = 0;
-    private int cachedScopeCount = 0;
-    private long lastScopeCacheTime = 0;
-
-    // Persistent start time for Discord timestamp
-    private long startTime = 0;
-
     private ScheduledExecutorService scheduler;
+    private boolean isConnected = false;
+    private final OffsetDateTime startTime;
 
-    public DiscordRPCManager(MontoyaApi api, BurpcordConfig config) {
-        this.api = api;
+    public DiscordRPCManager(BurpcordConfig config) {
         this.config = config;
-        initCollaborator();
+        this.startTime = OffsetDateTime.now();
     }
 
-    private void initCollaborator() {
-        try {
-            collaboratorClient = api.collaborator().createClient();
-            collaboratorAvailable = true;
-            api.logging().logToOutput("Collaborator client initialized (Pro feature)");
-            BurpcordSettingsTab.log("Collaborator client initialized (Pro feature)");
-        } catch (Exception e) {
-            collaboratorAvailable = false;
-            api.logging().logToOutput("Collaborator not available (Community Edition or not configured)");
-            BurpcordSettingsTab.log("Collaborator not available (CE edition)");
-        }
+    /**
+     * Registers a new activity provider.
+     * 
+     * @param provider The provider implementation to register.
+     */
+    public void registerProvider(ActivityProvider provider) {
+        providers.add(provider);
     }
 
-    public boolean isConnected() {
-        return isConnected;
+    /**
+     * Registers multiple activity providers at once.
+     * 
+     * @param newProviders Variable arguments of providers to register.
+     */
+    public void registerProviders(ActivityProvider... newProviders) {
+        java.util.Collections.addAll(providers, newProviders);
     }
 
-    public void setIntercepting(boolean intercepting) {
-        isIntercepting.set(intercepting);
-        if (intercepting) {
-            lastInterceptTime = System.currentTimeMillis();
-        }
-    }
-
-    public void markActiveScan() {
-        lastActiveScanTime = System.currentTimeMillis();
-    }
-
-    public void markPassiveScan() {
-        lastPassiveScanTime = System.currentTimeMillis();
-    }
-
+    /**
+     * Initializes the IPC client and starts the update scheduler.
+     */
     public void initialize() {
-        try {
-            client = new IPCClient(Long.parseLong(config.getAppId()));
-            client.setListener(new IPCListener() {
-                public void onReady(IPCClient client) {
-                    api.logging().logToOutput("Discord IPC Ready!");
-                    BurpcordSettingsTab.log("Discord IPC Ready!");
-                    isConnected = true;
-                    BurpcordSettingsTab.updateConnectionStatusStatic(true);
-                    // Initialize start time on connection
-                    startTime = System.currentTimeMillis() / 1000L;
-                    // Send initial presence with Burp version
-                    updatePresence(getBurpVersion());
-                    startPeriodicUpdates();
-                }
+        if (!config.isRpcEnabled())
+            return;
 
-                public void onDisconnect(IPCClient client, Throwable t) {
-                    String message = (t != null && t.getMessage() != null) ? t.getMessage() : "Unknown error";
-                    api.logging().logToError("Discord IPC Disconnected: " + message);
-                    BurpcordSettingsTab.log("ERROR: Discord disconnected - " + message);
-                    isConnected = false;
-                    BurpcordSettingsTab.updateConnectionStatusStatic(false);
-                    stopPeriodicUpdates();
+        try {
+            long appId = Long.parseLong(config.getAppId());
+            client = new IPCClient(appId);
+            client.setListener(new IPCListener() {
+                @Override
+                public void onReady(IPCClient client) {
+                    isConnected = true;
+                    BurpcordSettingsTab.log("Connected to Discord IPC.");
+                    BurpcordSettingsTab.updateConnectionStatusStatic(true);
+                    updatePresence("Ready");
                 }
 
                 @Override
-                public void onClose(IPCClient client, JsonObject json) {
-                    api.logging().logToOutput("Discord IPC Closed: " + json.toString());
+                public void onDisconnect(IPCClient client, Throwable t) {
                     isConnected = false;
-                    stopPeriodicUpdates();
+                    BurpcordSettingsTab.log("Disconnected from Discord IPC.");
+                    BurpcordSettingsTab.updateConnectionStatusStatic(false);
                 }
 
                 @Override
                 public void onPacketSent(IPCClient client, Packet packet) {
-                    // Optional: Debug logging
+                    // No-op
                 }
 
                 @Override
                 public void onPacketReceived(IPCClient client, Packet packet) {
-                    // Optional: Debug logging
+                    // No-op
                 }
 
                 @Override
                 public void onActivityJoin(IPCClient client, String secret) {
-                    // Not used
+                    // No-op
                 }
 
                 @Override
                 public void onActivitySpectate(IPCClient client, String secret) {
-                    // Not used
+                    // No-op
                 }
 
                 @Override
                 public void onActivityJoinRequest(IPCClient client, String secret, User user) {
-                    // Not used
+                    // No-op
+                }
+
+                @Override
+                public void onClose(IPCClient client, JsonObject json) {
+                    isConnected = false;
+                    BurpcordSettingsTab.log("Discord IPC Closed.");
+                    BurpcordSettingsTab.updateConnectionStatusStatic(false);
                 }
             });
 
-            api.logging().logToOutput("Connecting to Discord IPC...");
             client.connect();
+            startScheduler();
 
         } catch (Exception e) {
-            api.logging().logToError("Failed to initialize Discord IPC: " + e.getMessage());
-            isConnected = false;
-        }
-    }
-
-    public void incrementRequestCount() {
-        requestCount.incrementAndGet();
-    }
-
-    public void incrementResponseCount() {
-        responseCount.incrementAndGet();
-    }
-
-    // Scanner methods
-    public void incrementVulnHigh() {
-        vulnHigh.incrementAndGet();
-    }
-
-    public void incrementVulnMedium() {
-        vulnMedium.incrementAndGet();
-    }
-
-    public void incrementVulnLow() {
-        vulnLow.incrementAndGet();
-    }
-
-    public void incrementVulnInfo() {
-        vulnInfo.incrementAndGet();
-    }
-
-    // Repeater methods
-    public void markRepeaterActivity() {
-        isRepeaterActive.set(true);
-        repeaterRequests.incrementAndGet();
-        lastRepeaterActivity = System.currentTimeMillis();
-    }
-
-    // Intruder methods
-    public void markIntruderActivity() {
-        intruderRequests.incrementAndGet();
-        lastIntruderActivity = System.currentTimeMillis();
-    }
-
-    // WebSocket methods
-    public void markWebSocketActivity() {
-        webSocketMessages.incrementAndGet();
-        lastWebSocketActivity = System.currentTimeMillis();
-    }
-
-    public void restartScheduler() {
-        stopPeriodicUpdates();
-        startPeriodicUpdates();
-    }
-
-    // Montoya API Stats Methods
-    private String getBurpVersion() {
-        try {
-            return api.burpSuite().version().toString();
-        } catch (Exception e) {
-            return "Burp Suite";
+            BurpcordSettingsTab.log("Burpcord: Failed to connect to Discord IPC: " + e.getMessage());
+            System.err.println("Burpcord: Failed to connect to Discord IPC.");
+            e.printStackTrace(); // Ensure full stack trace is visible in Burp Output
         }
     }
 
     /**
-     * Gets proxy history size with 30s caching for large project performance.
-     * Per BApp Store criterion #9: proxy().history() can return huge results.
-     */
-    private int getProxyHistorySize() {
-        long now = System.currentTimeMillis();
-        if (now - lastProxyHistoryCacheTime > CACHE_TTL_MS) {
-            try {
-                cachedProxyHistorySize = api.proxy().history().size();
-            } catch (Exception e) {
-                cachedProxyHistorySize = requestCount.get();
-            }
-            lastProxyHistoryCacheTime = now;
-        }
-        return cachedProxyHistorySize;
-    }
-
-    /**
-     * Gets site map size with 30s caching for large project performance.
-     * Per BApp Store criterion #9: siteMap().requestResponses() can return huge
-     * results.
-     */
-    private int getSiteMapSize() {
-        long now = System.currentTimeMillis();
-        if (now - lastSiteMapCacheTime > CACHE_TTL_MS) {
-            try {
-                cachedSiteMapSize = api.siteMap().requestResponses().size();
-            } catch (Exception e) {
-                cachedSiteMapSize = 0;
-            }
-            lastSiteMapCacheTime = now;
-        }
-        return cachedSiteMapSize;
-    }
-
-    /**
-     * Gets unique in-scope target count with 30s caching for large project
-     * performance.
-     */
-    private int getScopeTargetCount() {
-        long now = System.currentTimeMillis();
-        if (now - lastScopeCacheTime > CACHE_TTL_MS) {
-            try {
-                cachedScopeCount = (int) api.proxy().history().stream()
-                        .map(r -> r.finalRequest().httpService().host())
-                        .distinct()
-                        .filter(host -> {
-                            try {
-                                return api.scope().isInScope("https://" + host);
-                            } catch (Exception e) {
-                                return false;
-                            }
-                        })
-                        .count();
-            } catch (Exception e) {
-                cachedScopeCount = 0;
-            }
-            lastScopeCacheTime = now;
-        }
-        return cachedScopeCount;
-    }
-
-    private int getCollaboratorHits() {
-        if (!collaboratorAvailable || collaboratorClient == null) {
-            return -1;
-        }
-        try {
-            return collaboratorClient.getAllInteractions().size();
-        } catch (Exception e) {
-            return -1;
-        }
-    }
-
-    private void startPeriodicUpdates() {
-        if (scheduler == null || scheduler.isShutdown()) {
-            scheduler = Executors.newSingleThreadScheduledExecutor();
-            scheduler.scheduleAtFixedRate(() -> {
-                try {
-                    updateStatusFromStats();
-                } catch (Exception e) {
-                    api.logging().logToError("Error in status update: " + e.getMessage());
-                }
-            }, 0, config.getUpdateInterval(), TimeUnit.SECONDS);
-        }
-    }
-
-    private void stopPeriodicUpdates() {
-        if (scheduler != null) {
-            scheduler.shutdown();
-            scheduler = null;
-        }
-    }
-
-    private void updateStatusFromStats() {
-        long currentTime = System.currentTimeMillis();
-        java.util.List<String> activeStatuses = new java.util.ArrayList<>();
-
-        // 1. Check Intercept
-        if (isIntercepting.get()) {
-            // Auto-clear after 5 seconds of inactivity
-            if (currentTime - lastInterceptTime > 5000) {
-                isIntercepting.set(false);
-            } else if (config.isShowIntercept()) {
-                activeStatuses.add(String.format("Intercepting Traffic - %d reqs", requestCount.get()));
-            }
-        }
-
-        // 2. Check Scanner (Active or Passive activity in last 60s, or significant
-        // vulns)
-        int high = vulnHigh.get();
-        int med = vulnMedium.get();
-        boolean recentScan = (currentTime - lastActiveScanTime < 60000) || (currentTime - lastPassiveScanTime < 60000);
-
-        if ((recentScan || high > 0 || med > 0) && config.isShowScan()) {
-            if (high > 0 || med > 0) {
-                activeStatuses.add(String.format("Scanning: %d High | %d Med Issues", high, med));
-            } else if (recentScan) {
-                activeStatuses.add("Scanning for Vulnerabilities...");
-            }
-        }
-
-        // 3. Check Proxy (use Montoya API for accurate count)
-        if (config.isShowProxy()) {
-            int historySize = getProxyHistorySize();
-            if (historySize > 0 && !isIntercepting.get()) {
-                activeStatuses.add(String.format("Proxy: %d requests", historySize));
-            }
-        }
-
-        // 4. Check Repeater (Active in last 60s)
-        if (isRepeaterActive.get() && (currentTime - lastRepeaterActivity < 60000) && config.isShowRepeater()) {
-            activeStatuses.add(String.format("Testing in Repeater - %d requests", repeaterRequests.get()));
-        }
-
-        // 5. Check Intruder (Active in last 60s)
-        if ((currentTime - lastIntruderActivity < 60000) && config.isShowIntruder()) {
-            activeStatuses.add(String.format("Intruder Attack - %d requests", intruderRequests.get()));
-        }
-
-        // 6. Check Site Map
-        if (config.isShowSiteMap()) {
-            int endpoints = getSiteMapSize();
-            if (endpoints > 0) {
-                activeStatuses.add(String.format("Site Map: %d endpoints", endpoints));
-            }
-        }
-
-        // 7. Check Scope
-        if (config.isShowScope()) {
-            int targets = getScopeTargetCount();
-            if (targets > 0) {
-                activeStatuses.add(String.format("Testing %d target(s) in scope", targets));
-            }
-        }
-
-        // 8. Check Collaborator (Pro only)
-        if (config.isShowCollaborator() && collaboratorAvailable) {
-            int hits = getCollaboratorHits();
-            if (hits > 0) {
-                activeStatuses.add(String.format("Collaborator: %d OOB hits!", hits));
-            }
-        }
-
-        // 9. Check WebSockets (Active in last 60s)
-        if ((currentTime - lastWebSocketActivity < 60000) && config.isShowWebSockets()) {
-            activeStatuses.add(String.format("WebSocket: %d messages", webSocketMessages.get()));
-        }
-
-        // Default if nothing else
-        if (activeStatuses.isEmpty()) {
-            updatePresence(getBurpVersion());
-            return;
-        }
-
-        // Rotate statuses
-        String nextStatus = activeStatuses.get(statusIndex++ % activeStatuses.size());
-        updatePresence(nextStatus);
-    }
-
-    public void updatePresence(String details) {
-        if (!config.isRpcEnabled()) {
-            return;
-        }
-
-        if (client != null && client.getStatus() == PipeStatus.CONNECTED) {
-            try {
-                RichPresence.Builder builder = new RichPresence.Builder();
-
-                // Get edition name (e.g., "Professional")
-                String editionName = api.burpSuite().version().edition().displayName();
-
-                // Get version string from toString() (e.g., "Burp Suite Professional
-                // 2026.1.2-44793")
-                // Extract just the version part after the edition name
-                String fullVersion = api.burpSuite().version().toString();
-                String version = fullVersion.replace("Burp Suite " + editionName, "").trim();
-
-                // Details: Version number (e.g., "2026.1.2-44793")
-                // State: Custom text or default
-                String customState = config.getCustomState();
-                String state = (customState != null && !customState.isEmpty())
-                        ? customState
-                        : "Using Burp Suite";
-
-                builder.setDetails(editionName + " | " + version)
-                        .setState(state)
-                        .setLargeImage("burp", "Burpcord v" + BurpcordConstants.VERSION)
-                        .setStartTimestamp(startTime);
-
-                RichPresence rp = builder.build();
-
-                // Fix for NPE in library: explicitly set activityType via reflection if null
-                try {
-                    java.lang.reflect.Field f = rp.getClass().getDeclaredField("activityType");
-                    f.setAccessible(true);
-                    if (f.get(rp) == null) {
-                        Class<?> enumClass = f.getType();
-                        Object[] constants = enumClass.getEnumConstants();
-                        if (constants != null && constants.length > 0) {
-                            f.set(rp, constants[0]); // Default to first available (Playing)
-                        }
-                    }
-                } catch (Exception e) {
-                    // Silent
-                }
-
-                client.sendRichPresence(rp);
-            } catch (Exception e) {
-                api.logging().logToError("Failed to update presence: " + e.getMessage());
-            }
-        }
-    }
-
-    /**
-     * Clears the Discord Rich Presence by sending an empty activity.
-     * Discord interprets this as a "clear activity" command.
-     */
-    private void clearPresence() {
-        if (client != null && client.getStatus() == PipeStatus.CONNECTED) {
-            try {
-                // Send empty RichPresence - Discord interprets this as "clear activity"
-                RichPresence.Builder emptyBuilder = new RichPresence.Builder();
-                client.sendRichPresence(emptyBuilder.build());
-                BurpcordSettingsTab.log("Rich Presence cleared.");
-            } catch (Exception e) {
-                api.logging().logToError("Failed to clear presence: " + e.getMessage());
-            }
-        }
-    }
-
-    /**
-     * Reloads the Discord RPC connection to apply feature changes.
-     */
-    public void reloadRPC() {
-        BurpcordSettingsTab.log("Reloading Discord RPC...");
-        shutdown();
-        initialize();
-    }
-
-    /**
-     * Shuts down the Discord RPC connection and cleans up resources.
-     * Clears the Rich Presence before disconnecting to prevent ghost statuses.
+     * Shuts down the scheduler and closes the IPC connection.
      */
     public void shutdown() {
-        stopPeriodicUpdates();
-        isIntercepting.set(false);
-        isConnected = false;
-        startTime = 0; // Reset so next connection gets fresh time
-        if (client != null) {
-            try {
-                // CRITICAL: Clear presence BEFORE closing connection
-                clearPresence();
-
-                // Wait for Discord to process the clear command
-                Thread.sleep(500);
-
-                client.close();
-                BurpcordSettingsTab.log("Discord RPC disconnected.");
-            } catch (Exception e) {
-                api.logging().logToError("Error shutting down Discord IPC: " + e.getMessage());
-            }
-            client = null;
+        if (scheduler != null) {
+            scheduler.shutdownNow();
         }
+        if (client != null && client.getStatus() == PipeStatus.CONNECTED) {
+            client.close();
+        }
+        isConnected = false;
+    }
+
+    /**
+     * Restarts the scheduler with the current configuration.
+     */
+    public void restartScheduler() {
+        if (scheduler != null) {
+            scheduler.shutdownNow();
+        }
+        startScheduler();
+    }
+
+    private void startScheduler() {
+        scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler.scheduleAtFixedRate(this::updateLoop, 0, config.getUpdateInterval(), TimeUnit.SECONDS);
+    }
+
+    private void updateLoop() {
+        if (client == null || client.getStatus() != PipeStatus.CONNECTED) {
+            return;
+        }
+        updatePresence(null);
+    }
+
+    /**
+     * Constructs and sends the Rich Presence update to Discord.
+     * <p>
+     * Iterates through registered providers to determine the current activity
+     * state.
+     * If no specific provider is active, a default state is used.
+     * </p>
+     * 
+     * @param manualState Optional manual state override.
+     */
+    public void updatePresence(String manualState) {
+        if (client == null || client.getStatus() != PipeStatus.CONNECTED) {
+            return;
+        }
+
+        RichPresence.Builder builder = new RichPresence.Builder();
+        // Explicitly set ActivityType to prevent NPE in library
+        builder.setActivityType(ActivityType.Playing);
+
+        builder.setLargeImage("burp", "Burp Suite Professional");
+        builder.setStartTimestamp(startTime.toEpochSecond());
+
+        String state = config.getCustomState();
+        boolean providerFound = false;
+
+        for (ActivityProvider provider : providers) {
+            if (provider.isActive()) {
+                provider.updatePresence(builder);
+                providerFound = true;
+                break;
+            }
+        }
+
+        if (!providerFound) {
+            builder.setDetails("Burp Suite - " + BurpcordConstants.VERSION);
+            builder.setState(state != null && !state.isEmpty() ? state : "Security Researching");
+        }
+
+        client.sendRichPresence(builder.build());
+    }
+
+    /**
+     * Reinitializes the entire RPC subsystem.
+     */
+    public void reloadRPC() {
+        shutdown();
+        initialize();
     }
 }

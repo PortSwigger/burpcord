@@ -1,92 +1,49 @@
 package tech.chron0.burpcord.listeners;
 
-import tech.chron0.burpcord.discord.DiscordRPCManager;
+import tech.chron0.burpcord.config.BurpcordConfig;
+import tech.chron0.burpcord.discord.ActivityProvider;
 
-import burp.api.montoya.http.Http;
-import burp.api.montoya.http.message.HttpRequestResponse;
-
-import burp.api.montoya.scanner.AuditResult;
-
-import burp.api.montoya.scanner.audit.AuditIssueHandler;
-import burp.api.montoya.scanner.audit.insertionpoint.AuditInsertionPoint;
 import burp.api.montoya.scanner.audit.issues.AuditIssue;
+import burp.api.montoya.scanner.audit.AuditIssueHandler;
 
-import burp.api.montoya.scanner.scancheck.PassiveScanCheck;
-import burp.api.montoya.scanner.scancheck.ActiveScanCheck;
-
-import burp.api.montoya.scanner.audit.issues.AuditIssueSeverity;
-import burp.api.montoya.scanner.ConsolidationAction;
+import com.jagrosh.discordipc.entities.RichPresence;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Handles Burp Suite Scanner events for Discord Rich Presence updates.
- * 
+ * <h1>Scanner Listener</h1>
  * <p>
- * This listener monitors both active and passive scan activity, as well as
- * discovered vulnerabilities. It categorizes findings by severity (High,
- * Medium,
- * Low, Information) and reports them to the {@link DiscordRPCManager}.
+ * Listens for new audit issues identified by the Burp Scanner.
+ * Provides real-time stats on vulnerabilities found.
  * </p>
- * 
- * <p>
- * Implements multiple interfaces to receive comprehensive scan events:
- * </p>
- * <ul>
- * <li>{@link AuditIssueHandler} - Receives discovered vulnerability
- * notifications</li>
- * <li>{@link PassiveScanCheck} - Monitors passive scan activity</li>
- * <li>{@link ActiveScanCheck} - Monitors active scan activity</li>
- * </ul>
  * 
  * @author Jon Marien
- * @version 1.3
- * @see DiscordRPCManager
+ * @version 2.0.0
  */
-public class BurpcordScannerListener implements AuditIssueHandler, PassiveScanCheck, ActiveScanCheck {
+public class BurpcordScannerListener implements AuditIssueHandler, ActivityProvider {
 
-    /** Reference to the RPC manager for status updates. */
-    private final DiscordRPCManager manager;
+    private final BurpcordConfig config;
+    private final AtomicInteger issueCount = new AtomicInteger(0);
 
-    /**
-     * Creates a new scanner listener.
-     * 
-     * @param manager The Discord RPC manager to notify of scan activity
-     */
-    public BurpcordScannerListener(DiscordRPCManager manager) {
-        this.manager = manager;
+    public BurpcordScannerListener(BurpcordConfig config) {
+        this.config = config;
     }
 
     @Override
     public void handleNewAuditIssue(AuditIssue auditIssue) {
-        AuditIssueSeverity severity = auditIssue.severity();
-
-        switch (severity) {
-            case HIGH -> manager.incrementVulnHigh();
-            case MEDIUM -> manager.incrementVulnMedium();
-            case LOW -> manager.incrementVulnLow();
-            case INFORMATION -> manager.incrementVulnInfo();
-            default -> manager.incrementVulnInfo(); // Fallback for undefined
-        }
+        issueCount.incrementAndGet();
     }
 
     @Override
-    public String checkName() {
-        return "Burpcord Scanner";
+    public boolean isActive() {
+        // Efficient check: AtomicInteger read is instantaneous.
+        // Event-driven updates ensure no polling of Scan API is required.
+        return config.isShowScan() && issueCount.get() > 0;
     }
 
     @Override
-    public AuditResult doCheck(HttpRequestResponse baseRequestResponse) {
-        manager.markPassiveScan();
-        return AuditResult.auditResult(java.util.Collections.emptyList());
-    }
-
-    @Override
-    public AuditResult doCheck(HttpRequestResponse baseRequestResponse, AuditInsertionPoint insertionPoint, Http http) {
-        manager.markActiveScan();
-        return AuditResult.auditResult(java.util.Collections.emptyList());
-    }
-
-    @Override
-    public ConsolidationAction consolidateIssues(AuditIssue newIssue, AuditIssue existingIssue) {
-        return ConsolidationAction.KEEP_EXISTING;
+    public void updatePresence(RichPresence.Builder builder) {
+        builder.setDetails("Scanning Targets");
+        builder.setState("Issues Found: " + issueCount.get());
+        builder.setSmallImage("scanner", "Scanner");
     }
 }

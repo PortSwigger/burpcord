@@ -1,63 +1,70 @@
 package tech.chron0.burpcord.listeners;
 
-import tech.chron0.burpcord.discord.DiscordRPCManager;
+import tech.chron0.burpcord.config.BurpcordConfig;
+import tech.chron0.burpcord.discord.ActivityProvider;
 
-import burp.api.montoya.websocket.BinaryMessage;
-import burp.api.montoya.websocket.BinaryMessageAction;
 import burp.api.montoya.websocket.MessageHandler;
 import burp.api.montoya.websocket.TextMessage;
 import burp.api.montoya.websocket.TextMessageAction;
+import burp.api.montoya.websocket.BinaryMessage;
+import burp.api.montoya.websocket.BinaryMessageAction;
 import burp.api.montoya.websocket.WebSocketCreated;
 import burp.api.montoya.websocket.WebSocketCreatedHandler;
 
+import com.jagrosh.discordipc.entities.RichPresence;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
- * Handles WebSocket events for Discord Rich Presence updates.
- * 
+ * <h1>WebSocket Listener</h1>
  * <p>
- * This handler registers a message handler on each new WebSocket connection
- * to track both text and binary messages. It notifies the
- * {@link DiscordRPCManager}
- * of WebSocket activity to display message counts in Discord.
- * </p>
- * 
- * <p>
- * WebSocket activity is tracked with a 60-second timeout, so the status
- * will automatically clear after inactivity on all connections.
+ * Intercepts WebSocket creation and messages.
+ * Tracks message volume and activity through WebSocket connections.
  * </p>
  * 
  * @author Jon Marien
- * @version 1.3
- * @see DiscordRPCManager
+ * @version 2.0.0
  */
-public class BurpcordWebSocketListener implements WebSocketCreatedHandler {
+public class BurpcordWebSocketListener implements WebSocketCreatedHandler, MessageHandler, ActivityProvider {
 
-    /** Reference to the RPC manager for status updates. */
-    private final DiscordRPCManager manager;
+    private final BurpcordConfig config;
+    private final AtomicInteger messageCount = new AtomicInteger(0);
+    private long lastActivityTime = 0;
 
-    /**
-     * Creates a new WebSocket listener.
-     * 
-     * @param manager The Discord RPC manager to notify of WebSocket activity
-     */
-    public BurpcordWebSocketListener(DiscordRPCManager manager) {
-        this.manager = manager;
+    public BurpcordWebSocketListener(BurpcordConfig config) {
+        this.config = config;
     }
 
     @Override
     public void handleWebSocketCreated(WebSocketCreated webSocketCreated) {
-        // Register a message handler that tracks all WebSocket messages
-        webSocketCreated.webSocket().registerMessageHandler(new MessageHandler() {
-            @Override
-            public TextMessageAction handleTextMessage(TextMessage textMessage) {
-                manager.markWebSocketActivity();
-                return TextMessageAction.continueWith(textMessage);
-            }
+        // Fix: register handler on the WebSocket object, not the event object
+        webSocketCreated.webSocket().registerMessageHandler(this);
+    }
 
-            @Override
-            public BinaryMessageAction handleBinaryMessage(BinaryMessage binaryMessage) {
-                manager.markWebSocketActivity();
-                return BinaryMessageAction.continueWith(binaryMessage);
-            }
-        });
+    @Override
+    public TextMessageAction handleTextMessage(TextMessage textMessage) {
+        messageCount.incrementAndGet();
+        lastActivityTime = System.currentTimeMillis();
+        return TextMessageAction.continueWith(textMessage);
+    }
+
+    @Override
+    public BinaryMessageAction handleBinaryMessage(BinaryMessage binaryMessage) {
+        messageCount.incrementAndGet();
+        lastActivityTime = System.currentTimeMillis();
+        return BinaryMessageAction.continueWith(binaryMessage);
+    }
+
+    @Override
+    public boolean isActive() {
+        if (!config.isShowWebSockets())
+            return false;
+        return (System.currentTimeMillis() - lastActivityTime) < 30000;
+    }
+
+    @Override
+    public void updatePresence(RichPresence.Builder builder) {
+        builder.setDetails("WebSocket Traffic");
+        builder.setState("Messages: " + messageCount.get());
+        builder.setSmallImage("websocket", "WebSocket");
     }
 }

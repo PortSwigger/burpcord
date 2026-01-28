@@ -1,6 +1,7 @@
 package tech.chron0.burpcord.listeners;
 
-import tech.chron0.burpcord.discord.DiscordRPCManager;
+import tech.chron0.burpcord.config.BurpcordConfig;
+import tech.chron0.burpcord.discord.ActivityProvider;
 
 import burp.api.montoya.core.ToolType;
 import burp.api.montoya.http.handler.HttpHandler;
@@ -9,42 +10,34 @@ import burp.api.montoya.http.handler.HttpResponseReceived;
 import burp.api.montoya.http.handler.RequestToBeSentAction;
 import burp.api.montoya.http.handler.ResponseReceivedAction;
 
+import com.jagrosh.discordipc.entities.RichPresence;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
- * Handles Burp Suite Intruder events for Discord Rich Presence updates.
- * 
+ * <h1>Intruder Listener</h1>
  * <p>
- * This handler detects HTTP requests originating from the Intruder tool
- * during automated attacks and notifies the {@link DiscordRPCManager} of
- * attack activity with request counts.
- * </p>
- * 
- * <p>
- * Intruder activity is tracked with a 60-second timeout, so the status
- * will automatically clear after an attack completes or is stopped.
+ * Monitors Burp Intruder activity for fuzzing and brute-force attacks.
+ * Tracks the number of attack requests sent.
  * </p>
  * 
  * @author Jon Marien
- * @version 1.3
- * @see DiscordRPCManager
+ * @version 2.0.0
  */
-public class BurpcordIntruderListener implements HttpHandler {
+public class BurpcordIntruderListener implements HttpHandler, ActivityProvider {
 
-    /** Reference to the RPC manager for status updates. */
-    private final DiscordRPCManager manager;
+    private final BurpcordConfig config;
+    private final AtomicInteger attackCount = new AtomicInteger(0);
+    private long lastActivityTime = 0;
 
-    /**
-     * Creates a new Intruder listener.
-     * 
-     * @param manager The Discord RPC manager to notify of Intruder activity
-     */
-    public BurpcordIntruderListener(DiscordRPCManager manager) {
-        this.manager = manager;
+    public BurpcordIntruderListener(BurpcordConfig config) {
+        this.config = config;
     }
 
     @Override
     public RequestToBeSentAction handleHttpRequestToBeSent(HttpRequestToBeSent requestToBeSent) {
         if (requestToBeSent.toolSource().isFromTool(ToolType.INTRUDER)) {
-            manager.markIntruderActivity();
+            attackCount.incrementAndGet();
+            lastActivityTime = System.currentTimeMillis();
         }
         return RequestToBeSentAction.continueWith(requestToBeSent);
     }
@@ -52,5 +45,19 @@ public class BurpcordIntruderListener implements HttpHandler {
     @Override
     public ResponseReceivedAction handleHttpResponseReceived(HttpResponseReceived responseReceived) {
         return ResponseReceivedAction.continueWith(responseReceived);
+    }
+
+    @Override
+    public boolean isActive() {
+        if (!config.isShowIntruder())
+            return false;
+        return (System.currentTimeMillis() - lastActivityTime) < 60000;
+    }
+
+    @Override
+    public void updatePresence(RichPresence.Builder builder) {
+        builder.setDetails("Fuzzing / Brute Forcing");
+        builder.setState("Requests sent: " + attackCount.get());
+        builder.setSmallImage("intruder", "Intruder");
     }
 }
