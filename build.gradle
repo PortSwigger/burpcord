@@ -6,7 +6,7 @@ plugins {
     id "com.vanniktech.maven.publish" version "0.28.0"
 }
 
-group = 'tech.chron0.burpcord'
+group = 'io.github.jondmarien'
 version = '2.1.0'
 
 repositories {
@@ -46,7 +46,7 @@ shadowJar {
 build.dependsOn shadowJar
 
 mavenPublishing {
-    coordinates("tech.chron0.burpcord", "burpcord", version)
+    coordinates("io.github.jondmarien", "burpcord", version)
 
     pom {
         name = "Burpcord"

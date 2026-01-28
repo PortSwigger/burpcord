@@ -8,7 +8,9 @@ build/release-bundle/
 build/publications/
 build/libs/*.asc
 build/reports/
+build/manual-bundle/
 
+burpcord-complete-bundle.zip
 burpcord-maven-bundle.zip
 
 bin/
