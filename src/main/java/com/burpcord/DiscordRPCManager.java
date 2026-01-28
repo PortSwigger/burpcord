@@ -455,6 +455,27 @@ public class DiscordRPCManager {
         }
     }
 
+    /**
+     * Clears the Discord Rich Presence by sending an empty activity.
+     * Discord interprets this as a "clear activity" command.
+     */
+    private void clearPresence() {
+        if (client != null && client.getStatus() == PipeStatus.CONNECTED) {
+            try {
+                // Send empty RichPresence - Discord interprets this as "clear activity"
+                RichPresence.Builder emptyBuilder = new RichPresence.Builder();
+                client.sendRichPresence(emptyBuilder.build());
+                BurpcordSettingsTab.log("Rich Presence cleared.");
+            } catch (Exception e) {
+                api.logging().logToError("Failed to clear presence: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Shuts down the Discord RPC connection and cleans up resources.
+     * Clears the Rich Presence before disconnecting to prevent ghost statuses.
+     */
     public void shutdown() {
         stopPeriodicUpdates();
         isIntercepting.set(false);
@@ -462,7 +483,14 @@ public class DiscordRPCManager {
         startTime = 0; // Reset so next connection gets fresh time
         if (client != null) {
             try {
+                // CRITICAL: Clear presence BEFORE closing connection
+                clearPresence();
+
+                // Wait for Discord to process the clear command
+                Thread.sleep(500);
+
                 client.close();
+                BurpcordSettingsTab.log("Discord RPC disconnected.");
             } catch (Exception e) {
                 api.logging().logToError("Error shutting down Discord IPC: " + e.getMessage());
             }
