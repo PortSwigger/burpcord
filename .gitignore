@@ -1,5 +1,16 @@
 .gradle/
+
 build/classes/
 build/generated/
 build/tmp/
+build/docs/
+build/release-bundle/
+build/publications/
+build/libs/*.asc
+build/reports/
+
+burpcord-maven-bundle.zip
+
 bin/
+
+secret-key.gpg

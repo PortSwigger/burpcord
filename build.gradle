@@ -1,6 +1,9 @@
+import com.vanniktech.maven.publish.SonatypeHost
+
 plugins {
     id 'java'
     id 'com.gradleup.shadow' version '9.3.1'
+    id "com.vanniktech.maven.publish" version "0.28.0"
 }
 
 group = 'tech.chron0.burpcord'
@@ -41,3 +44,36 @@ shadowJar {
 
 // Build should produce the shadow jar
 build.dependsOn shadowJar
+
+mavenPublishing {
+    coordinates("tech.chron0.burpcord", "burpcord", version)
+
+    pom {
+        name = "Burpcord"
+        description = "Discord Rich Presence integration for Burp Suite"
+        inceptionYear = "2026"
+        url = "https://github.com/jondmarien/Burpcord"
+        licenses {
+            license {
+                name = "The MIT License"
+                url = "https://opensource.org/licenses/MIT"
+                distribution = "repo"
+            }
+        }
+        developers {
+            developer {
+                id = "jondmarien"
+                name = "Jonathan Marien"
+                url = "https://github.com/jondmarien"
+            }
+        }
+        scm {
+            url = "https://github.com/jondmarien/Burpcord"
+            connection = "scm:git:git://github.com/jondmarien/Burpcord.git"
+            developerConnection = "scm:git:ssh://git@github.com/jondmarien/Burpcord.git"
+        }
+    }
+
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
+}
