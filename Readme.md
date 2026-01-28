@@ -1,6 +1,6 @@
 # Burpcord - Discord Rich Presence for Burp Suite
 
-[![GitHub Package](https://img.shields.io/badge/GitHub-Package-blue)](https://github.com/jondmarien/Burpcord/pkgs/maven/io.github.jondmarien.burpcord)
+[![GitHub Package](https://img.shields.io/badge/GitHub-Packages-blue)](https://github.com/jondmarien/Burpcord/packages)
 [![Version](https://img.shields.io/badge/v2.1.0-blue.svg)](https://github.com/jondmarien/Burpcord/releases/tag/v2.1.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
