@@ -484,7 +484,7 @@ public class DiscordRPCManager {
 
                 builder.setDetails(edition)
                         .setState(state)
-                        .setLargeImage("burp", "Burpcord v1.5.0")
+                        .setLargeImage("burp", "Burpcord v1.5.1")
                         .setStartTimestamp(startTime);
 
                 RichPresence rp = builder.build();
@@ -526,6 +526,15 @@ public class DiscordRPCManager {
                 api.logging().logToError("Failed to clear presence: " + e.getMessage());
             }
         }
+    }
+
+    /**
+     * Reloads the Discord RPC connection to apply feature changes.
+     */
+    public void reloadRPC() {
+        BurpcordSettingsTab.log("Reloading Discord RPC...");
+        shutdown();
+        initialize();
     }
 
     /**

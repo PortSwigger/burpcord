@@ -30,7 +30,7 @@ import java.net.URI;
  */
 public class BurpcordSettingsTab extends JPanel {
 
-    private static final String VERSION = "1.5.0";
+    private static final String VERSION = "1.5.1";
     private static final String AUTHOR = "Jon Marien";
     private static final String GITHUB_URL = "https://github.com/jondmarien/Burpcord";
 
@@ -86,14 +86,23 @@ public class BurpcordSettingsTab extends JPanel {
 
         // Feature checkboxes - Display status on Discord
         showInterceptCheck = new JCheckBox("Show Intercept on Discord", config.isShowIntercept());
+        showInterceptCheck.setToolTipText("Show intercept on/off status in Discord presence");
         showScanCheck = new JCheckBox("Show Scanner on Discord", config.isShowScan());
+        showScanCheck.setToolTipText("Show active scan count in Discord presence");
         showProxyCheck = new JCheckBox("Show Proxy on Discord", config.isShowProxy());
+        showProxyCheck.setToolTipText("Show proxy request count in Discord presence");
         showRepeaterCheck = new JCheckBox("Show Repeater on Discord", config.isShowRepeater());
+        showRepeaterCheck.setToolTipText("Show repeater tab count in Discord presence");
         showIntruderCheck = new JCheckBox("Show Intruder on Discord", config.isShowIntruder());
+        showIntruderCheck.setToolTipText("Show intruder attack count in Discord presence");
         showSiteMapCheck = new JCheckBox("Show Site Map on Discord", config.isShowSiteMap());
+        showSiteMapCheck.setToolTipText("Show site map host count in Discord presence");
         showScopeCheck = new JCheckBox("Show Scope on Discord", config.isShowScope());
+        showScopeCheck.setToolTipText("Show target scope count in Discord presence");
         showCollaboratorCheck = new JCheckBox("Show Collaborator on Discord", config.isShowCollaborator());
+        showCollaboratorCheck.setToolTipText("Show Collaborator interactions (Burp Pro only)");
         showWebSocketsCheck = new JCheckBox("Show WebSocket on Discord", config.isShowWebSockets());
+        showWebSocketsCheck.setToolTipText("Show WebSocket message count in Discord presence");
 
         // Create tabs
         tabbedPane.addTab("Settings", createSettingsPanel());
@@ -154,12 +163,34 @@ public class BurpcordSettingsTab extends JPanel {
         // Bottom section: Log viewer
         JPanel bottomSection = createLogPanel();
 
+        // Feature apply button with hint
+        JPanel applyPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        JButton applyFeaturesBtn = new JButton("⟳ Apply Feature Changes");
+        applyFeaturesBtn.setToolTipText("Click to apply feature toggle changes to Discord");
+        applyFeaturesBtn.addActionListener(e -> {
+            logArea.setText("");
+            log("Applying feature changes...");
+            logEnabledFeatures();
+            if (rpcManager != null) {
+                rpcManager.reloadRPC();
+                log("Discord RPC reloaded with new feature settings.");
+            } else {
+                log("ERROR: RPC Manager not available.");
+            }
+        });
+        JLabel hintLabel = new JLabel("(Click after toggling features)");
+        hintLabel.setFont(hintLabel.getFont().deriveFont(Font.ITALIC, 11f));
+        applyPanel.add(applyFeaturesBtn);
+        applyPanel.add(hintLabel);
+
         // Combine sections
         JPanel settingsContent = new JPanel();
         settingsContent.setLayout(new BoxLayout(settingsContent, BoxLayout.Y_AXIS));
         settingsContent.add(topSection);
         settingsContent.add(Box.createVerticalStrut(15));
         settingsContent.add(middleSection);
+        settingsContent.add(Box.createVerticalStrut(10));
+        settingsContent.add(applyPanel);
 
         mainPanel.add(settingsContent, BorderLayout.NORTH);
         mainPanel.add(bottomSection, BorderLayout.CENTER);
@@ -215,6 +246,7 @@ public class BurpcordSettingsTab extends JPanel {
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.CENTER;
         JButton saveBtn = new JButton("Save Connection Settings");
+        saveBtn.setToolTipText("Save Discord App ID, update interval, and custom state text");
         saveBtn.addActionListener(e -> saveConnectionSettings());
         panel.add(saveBtn, gbc);
 
@@ -236,6 +268,7 @@ public class BurpcordSettingsTab extends JPanel {
         gbc.weightx = 1.0;
 
         JButton updateStateBtn = new JButton("Update Discord Status Now");
+        updateStateBtn.setToolTipText("Force an immediate update to your Discord Rich Presence");
         updateStateBtn.addActionListener(e -> {
             config.setCustomState(customStateField.getText().trim());
             rpcManager.updatePresence("Using Burp Suite");
@@ -245,11 +278,13 @@ public class BurpcordSettingsTab extends JPanel {
         panel.add(updateStateBtn, gbc);
 
         JButton resetBtn = new JButton("Reset All Settings");
+        resetBtn.setToolTipText("Reset all Burpcord settings to default values");
         resetBtn.addActionListener(e -> resetSettings());
         gbc.gridy = 1;
         panel.add(resetBtn, gbc);
 
         JButton disconnectBtn = new JButton("Disconnect from Discord");
+        disconnectBtn.setToolTipText("Stop Discord Rich Presence and disconnect from Discord IPC");
         disconnectBtn.addActionListener(e -> {
             rpcManager.shutdown();
             updateConnectionStatus(false);
@@ -545,6 +580,13 @@ public class BurpcordSettingsTab extends JPanel {
         if (instance != null) {
             instance.updateConnectionStatus(connected);
         }
+    }
+
+    /**
+     * Logs the enabled features table to the log viewer.
+     */
+    private void logEnabledFeatures() {
+        BurpcordExtension.logEnabledFeatures(config);
     }
 
     /**

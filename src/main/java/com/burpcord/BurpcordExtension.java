@@ -90,12 +90,18 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
 
                 // Log ASCII banner to built-in log viewer (AFTER tab is registered!)
                 BurpcordSettingsTab.log("");
-                BurpcordSettingsTab.log("  ____                                     _");
-                BurpcordSettingsTab.log(" | __ ) _   _ _ __ _ __   ___ ___  _ __ __| |");
-                BurpcordSettingsTab.log(" |  _ \\| | | | '__| '_ \\ / __/ _ \\| '__/ _` |");
-                BurpcordSettingsTab.log(" | |_) | |_| | |  | |_) | (_| (_) | | | (_| |");
-                BurpcordSettingsTab.log(" |____/ \\__,_|_|  | .__/ \\___\\___/|_|  \\__,_|");
-                BurpcordSettingsTab.log("                  |_|");
+                BurpcordSettingsTab.log(
+                                " :::::::::  :::    ::: :::::::::  :::::::::   ::::::::   ::::::::  :::::::::  :::::::::  ");
+                BurpcordSettingsTab.log(
+                                " :+:    :+: :+:    :+: :+:    :+: :+:    :+: :+:    :+: :+:    :+: :+:    :+: :+:    :+: ");
+                BurpcordSettingsTab.log(
+                                " +:+    +:+ +:+    +:+ +:+    +:+ +:+    +:+ +:+        +:+    +:+ +:+    +:+ +:+    +:+ ");
+                BurpcordSettingsTab.log(
+                                " +#++:++#+  +#+    +:+ +#++:++#:  +#++:++#+  +#+        +#+    +:+ +#++:++#:  +#+    +:+ ");
+                BurpcordSettingsTab.log(
+                                " +#+    +#+ +#+    +#+ +#+    +#+ +#+        +#+        +#+    +#+ +#+    +#+ +#+    +#+ ");
+                BurpcordSettingsTab.log(
+                                " #########   ########  ###    ### ###         ########   ########  ###    ### #########  ");
                 BurpcordSettingsTab.log("  Discord Rich Presence for Burp Suite.");
                 BurpcordSettingsTab.log("");
                 BurpcordSettingsTab.log("Burpcord initialized.");
@@ -133,32 +139,22 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
          * 
          * @param config The configuration to check for enabled features
          */
-        private void logEnabledFeatures(BurpcordConfig config) {
-                BurpcordSettingsTab.log("+--------------------------------------------------+");
-                BurpcordSettingsTab.log("|            DISCORD STATUS TRACKERS                     |");
-                BurpcordSettingsTab.log("+--------------------------------------------------+");
+        public static void logEnabledFeatures(BurpcordConfig config) {
+                BurpcordSettingsTab.log("--- Discord Status Trackers ---");
+                logFeature("Intercept", config.isShowIntercept());
+                logFeature("Scanner", config.isShowScan());
+                logFeature("Proxy", config.isShowProxy());
+                logFeature("Repeater", config.isShowRepeater());
+                logFeature("Intruder", config.isShowIntruder());
+                logFeature("SiteMap", config.isShowSiteMap());
+                logFeature("Scope", config.isShowScope());
+                logFeature("Collaborator", config.isShowCollaborator());
+                logFeature("WebSocket", config.isShowWebSockets());
+                BurpcordSettingsTab.log("-------------------------------");
+        }
 
-                // First row - use fixed width formatting
-                String r1 = String.format("| %s Intercept     %s Scanner     %s Proxy                  |",
-                                config.isShowIntercept() ? "[x]" : "[ ]",
-                                config.isShowScan() ? "[x]" : "[ ]",
-                                config.isShowProxy() ? "[x]" : "[ ]");
-                BurpcordSettingsTab.log(r1);
-
-                // Second row
-                String r2 = String.format("| %s Repeater     %s Intruder     %s SiteMap              |",
-                                config.isShowRepeater() ? "[x]" : "[ ]",
-                                config.isShowIntruder() ? "[x]" : "[ ]",
-                                config.isShowSiteMap() ? "[x]" : "[ ]");
-                BurpcordSettingsTab.log(r2);
-
-                // Third row
-                String r3 = String.format("| %s Scope          %s Collab       %s WebSocket          |",
-                                config.isShowScope() ? "[x]" : "[ ]",
-                                config.isShowCollaborator() ? "[x]" : "[ ]",
-                                config.isShowWebSockets() ? "[x]" : "[ ]");
-                BurpcordSettingsTab.log(r3);
-
-                BurpcordSettingsTab.log("+--------------------------------------------------+");
+        private static void logFeature(String name, boolean enabled) {
+                String status = enabled ? "ENABLED" : "DISABLED";
+                BurpcordSettingsTab.log("  " + name + ": " + status);
         }
 }
