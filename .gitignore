@@ -10,6 +10,7 @@ build/libs/*.asc
 build/reports/
 build/manual-bundle/
 build/manual-*/
+build/final-bundle/
 
 burpcord-*.zip
 burpcord-complete-bundle.zip

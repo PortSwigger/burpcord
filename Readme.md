@@ -1,5 +1,8 @@
 # Burpcord - Discord Rich Presence for Burp Suite
 
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.jondmarien/burpcord)](https://central.sonatype.com/artifact/io.github.jondmarien/burpcord)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 **Burpcord v2.1.0** is a complete rewrite of the original Burp Suite extension that integrates with Discord Rich Presence. It displays your active security testing workflow on your Discord profile in real-time, built with a robust, modular architecture.
 
 ## 🚀 Features
