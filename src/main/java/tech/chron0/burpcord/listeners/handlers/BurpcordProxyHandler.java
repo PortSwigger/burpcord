@@ -15,18 +15,21 @@ import burp.api.montoya.proxy.http.ProxyResponseToBeSentAction;
 import com.jagrosh.discordipc.entities.RichPresence;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import burp.api.montoya.MontoyaApi;
+import tech.chron0.burpcord.listeners.BurpComponent;
+
 /**
- * <h1>Proxy Listener</h1>
+ * <h1>Burpcord Proxy Handler</h1>
  * <p>
- * Monitors the Burp Suite Proxy tool for traffic activity.
- * Tracks the number of intercepted requests and responses passing through the
- * proxy.
+ * Handles HTTP requests and responses intercepted by the Burp Proxy.
+ * Updates Rich Presence with details about the intercepted item.
  * </p>
  * 
  * @author Jon Marien
- * @version 2.0.1
+ * @version 2.1.0
  */
-public class BurpcordProxyHandler implements ProxyRequestHandler, ProxyResponseHandler, ActivityProvider {
+public class BurpcordProxyHandler
+        implements ProxyRequestHandler, ProxyResponseHandler, ActivityProvider, BurpComponent {
 
     private final BurpcordConfig config;
     private final AtomicInteger requestCount = new AtomicInteger(0);
@@ -72,5 +75,16 @@ public class BurpcordProxyHandler implements ProxyRequestHandler, ProxyResponseH
         builder.setDetails("Proxying Traffic");
         builder.setState("Requests: " + requestCount.get());
         builder.setSmallImage("proxy", "Proxy");
+    }
+
+    @Override
+    public void register(MontoyaApi api) {
+        api.proxy().registerRequestHandler(this);
+        api.proxy().registerResponseHandler(this);
+    }
+
+    @Override
+    public int getPriority() {
+        return 10;
     }
 }

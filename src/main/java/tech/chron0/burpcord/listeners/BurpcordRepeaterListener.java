@@ -13,17 +13,19 @@ import burp.api.montoya.http.handler.ResponseReceivedAction;
 import com.jagrosh.discordipc.entities.RichPresence;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import burp.api.montoya.MontoyaApi;
+
 /**
- * <h1>Repeater Listener</h1>
+ * <h1>Burpcord Repeater Listener</h1>
  * <p>
- * Tracks manual testing activity within the Burp Repeater tool.
- * Updates activity status based on request frequency.
+ * Listens for HTTP requests made via Burp Repeater.
+ * Updates Rich Presence with request details.
  * </p>
  * 
  * @author Jon Marien
- * @version 2.0.1
+ * @version 2.1.0
  */
-public class BurpcordRepeaterListener implements HttpHandler, ActivityProvider {
+public class BurpcordRepeaterListener implements HttpHandler, ActivityProvider, BurpComponent {
 
     private final BurpcordConfig config;
     private final AtomicInteger requestCount = new AtomicInteger(0);
@@ -59,5 +61,15 @@ public class BurpcordRepeaterListener implements HttpHandler, ActivityProvider {
         builder.setDetails("Manual Testing (Repeater)");
         builder.setState("Requests sent: " + requestCount.get());
         builder.setSmallImage("repeater", "Repeater");
+    }
+
+    @Override
+    public void register(MontoyaApi api) {
+        api.http().registerHttpHandler(this);
+    }
+
+    @Override
+    public int getPriority() {
+        return 40;
     }
 }

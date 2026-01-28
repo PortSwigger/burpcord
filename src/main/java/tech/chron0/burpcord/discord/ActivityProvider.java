@@ -13,7 +13,7 @@ import com.jagrosh.discordipc.entities.RichPresence;
  * </p>
  * 
  * @author Jon Marien
- * @version 2.0.1
+ * @version 2.1.0
  */
 public interface ActivityProvider {
 
@@ -31,4 +31,14 @@ public interface ActivityProvider {
      * @param builder The {@link RichPresence.Builder} to modify.
      */
     void updatePresence(RichPresence.Builder builder);
+
+    /**
+     * Gets the priority of this provider. Lower values indicate higher priority.
+     * Default is 100.
+     * 
+     * @return The priority value.
+     */
+    default int getPriority() {
+        return 100;
+    }
 }

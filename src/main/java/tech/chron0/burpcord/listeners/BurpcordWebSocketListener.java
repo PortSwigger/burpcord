@@ -14,17 +14,20 @@ import burp.api.montoya.websocket.WebSocketCreatedHandler;
 import com.jagrosh.discordipc.entities.RichPresence;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import burp.api.montoya.MontoyaApi;
+
 /**
- * <h1>WebSocket Listener</h1>
+ * <h1>Burpcord WebSocket Listener</h1>
  * <p>
  * Intercepts WebSocket creation and messages.
  * Tracks message volume and activity through WebSocket connections.
  * </p>
  * 
  * @author Jon Marien
- * @version 2.0.1
+ * @version 2.1.0
  */
-public class BurpcordWebSocketListener implements WebSocketCreatedHandler, MessageHandler, ActivityProvider {
+public class BurpcordWebSocketListener
+        implements WebSocketCreatedHandler, MessageHandler, ActivityProvider, BurpComponent {
 
     private final BurpcordConfig config;
     private final AtomicInteger messageCount = new AtomicInteger(0);
@@ -66,5 +69,15 @@ public class BurpcordWebSocketListener implements WebSocketCreatedHandler, Messa
         builder.setDetails("WebSocket Traffic");
         builder.setState("Messages: " + messageCount.get());
         builder.setSmallImage("websocket", "WebSocket");
+    }
+
+    @Override
+    public void register(MontoyaApi api) {
+        api.websockets().registerWebSocketCreatedHandler(this);
+    }
+
+    @Override
+    public int getPriority() {
+        return 50;
     }
 }

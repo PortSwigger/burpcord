@@ -1,6 +1,6 @@
 # Burpcord - Discord Rich Presence for Burp Suite
 
-**Burpcord v2.0.1** is a complete rewrite of the original Burp Suite extension that integrates with Discord Rich Presence. It displays your active security testing workflow on your Discord profile in real-time, built with a robust, modular architecture.
+**Burpcord v2.1.0** is a complete rewrite of the original Burp Suite extension that integrates with Discord Rich Presence. It displays your active security testing workflow on your Discord profile in real-time, built with a robust, modular architecture.
 
 ## 🚀 Features
 
@@ -32,7 +32,7 @@
 
 ## 🛠️ Installation
 
-1. **Download**: Get the latest `Burpcord-2.0.1.jar` from the [Releases](https://github.com/jondmarien/burpcord/releases) page.
+1. **Download**: Get the latest `Burpcord-2.1.0.jar` from the [Releases](https://github.com/jondmarien/burpcord/releases) page.
 2. **Load in Burp Suite**:
    - Go to **Extensions** → **Installed**.
    - Click **Add**.
@@ -67,7 +67,7 @@ Enable or disable specific tracking modules:
 - JDK 21+
 - Gradle 8.0+
 
-Burpcord v2.0.1 uses the **ShadowJar** plugin to bundle dependencies and prevent runtime conflicts with Burp Suite.
+Burpcord v2.1.0 uses the **ShadowJar** plugin to bundle dependencies and prevent runtime conflicts with Burp Suite.
 
 ```bash
 git clone https://github.com/jondmarien/burpcord.git
@@ -78,7 +78,7 @@ cd burpcord
 ```
 
 The compiled artifact will be located at:
-`build/libs/Burpcord-2.0.1.jar`
+`build/libs/Burpcord-2.1.0.jar`
 
 ## 🔧 Troubleshooting
 

@@ -9,17 +9,19 @@ import burp.api.montoya.scanner.audit.AuditIssueHandler;
 import com.jagrosh.discordipc.entities.RichPresence;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import burp.api.montoya.MontoyaApi;
+
 /**
- * <h1>Scanner Listener</h1>
+ * <h1>Burpcord Scanner Listener</h1>
  * <p>
- * Listens for new audit issues identified by the Burp Scanner.
+ * Listens for audit issues identified by the Burp Scanner.
  * Provides real-time stats on vulnerabilities found.
  * </p>
  * 
  * @author Jon Marien
- * @version 2.0.1
+ * @version 2.1.0
  */
-public class BurpcordScannerListener implements AuditIssueHandler, ActivityProvider {
+public class BurpcordScannerListener implements AuditIssueHandler, ActivityProvider, BurpComponent {
 
     private final BurpcordConfig config;
     private final AtomicInteger issueCount = new AtomicInteger(0);
@@ -45,5 +47,15 @@ public class BurpcordScannerListener implements AuditIssueHandler, ActivityProvi
         builder.setDetails("Scanning Targets");
         builder.setState("Issues Found: " + issueCount.get());
         builder.setSmallImage("scanner", "Scanner");
+    }
+
+    @Override
+    public void register(MontoyaApi api) {
+        api.scanner().registerAuditIssueHandler(this);
+    }
+
+    @Override
+    public int getPriority() {
+        return 20;
     }
 }

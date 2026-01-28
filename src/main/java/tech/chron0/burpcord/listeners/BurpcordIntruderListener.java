@@ -13,17 +13,19 @@ import burp.api.montoya.http.handler.ResponseReceivedAction;
 import com.jagrosh.discordipc.entities.RichPresence;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import burp.api.montoya.MontoyaApi;
+
 /**
- * <h1>Intruder Listener</h1>
+ * <h1>Burpcord Intruder Listener</h1>
  * <p>
  * Monitors Burp Intruder activity for fuzzing and brute-force attacks.
  * Tracks the number of attack requests sent.
  * </p>
  * 
  * @author Jon Marien
- * @version 2.0.1
+ * @version 2.1.0
  */
-public class BurpcordIntruderListener implements HttpHandler, ActivityProvider {
+public class BurpcordIntruderListener implements HttpHandler, ActivityProvider, BurpComponent {
 
     private final BurpcordConfig config;
     private final AtomicInteger attackCount = new AtomicInteger(0);
@@ -59,5 +61,15 @@ public class BurpcordIntruderListener implements HttpHandler, ActivityProvider {
         builder.setDetails("Fuzzing / Brute Forcing");
         builder.setState("Requests sent: " + attackCount.get());
         builder.setSmallImage("intruder", "Intruder");
+    }
+
+    @Override
+    public void register(MontoyaApi api) {
+        api.http().registerHttpHandler(this);
+    }
+
+    @Override
+    public int getPriority() {
+        return 30;
     }
 }

@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  * </ul>
  * 
  * @author Jon Marien
- * @version 2.0.1
+ * @version 2.1.0
  */
 public class DiscordRPCManager {
 
@@ -62,6 +62,7 @@ public class DiscordRPCManager {
      */
     public void registerProvider(ActivityProvider provider) {
         providers.add(provider);
+        providers.sort(java.util.Comparator.comparingInt(ActivityProvider::getPriority));
     }
 
     /**
@@ -71,6 +72,12 @@ public class DiscordRPCManager {
      */
     public void registerProviders(ActivityProvider... newProviders) {
         java.util.Collections.addAll(providers, newProviders);
+        providers.sort(java.util.Comparator.comparingInt(ActivityProvider::getPriority));
+    }
+
+    public void registerProviders(List<ActivityProvider> newProviders) {
+        providers.addAll(newProviders);
+        providers.sort(java.util.Comparator.comparingInt(ActivityProvider::getPriority));
     }
 
     /**

@@ -34,7 +34,7 @@ import javax.swing.SwingUtilities;
  * </ul>
  * 
  * @author Jon Marien
- * @version 2.0.1
+ * @version 2.1.0
  * @see <a href="https://discord.gg/wXWJp9M9Cq">Burp Suite Discord</a>
  */
 public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandler {
@@ -103,34 +103,26 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
         }
 
         private void initializeComponents(MontoyaApi api, BurpcordConfig config, DiscordRPCManager rpcManager) {
-                // Initialize Listeners & Providers
-                BurpcordProxyHandler proxyHandler = new BurpcordProxyHandler(config);
-                BurpcordScannerListener scannerListener = new BurpcordScannerListener(config);
-                BurpcordRepeaterListener repeaterListener = new BurpcordRepeaterListener(config);
-                BurpcordIntruderListener intruderListener = new BurpcordIntruderListener(config);
-                BurpcordWebSocketListener socketListener = new BurpcordWebSocketListener(config);
-                BurpcordSiteMapProvider siteMapProvider = new BurpcordSiteMapProvider(api, config);
-                BurpcordScopeProvider scopeProvider = new BurpcordScopeProvider(api, config);
-                BurpcordCollaboratorProvider collaboratorProvider = new BurpcordCollaboratorProvider(api, config);
+                // Initialize all components - Priority is now defined within each class via
+                // getPriority()
+                java.util.List<tech.chron0.burpcord.discord.ActivityProvider> components = java.util.Arrays.asList(
+                                new BurpcordProxyHandler(config),
+                                new BurpcordScannerListener(config),
+                                new BurpcordRepeaterListener(config),
+                                new BurpcordIntruderListener(config),
+                                new BurpcordWebSocketListener(config),
+                                new BurpcordSiteMapProvider(api, config),
+                                new BurpcordScopeProvider(api, config),
+                                new BurpcordCollaboratorProvider(api, config));
 
-                // Register Providers (Order determines priority in status display)
-                rpcManager.registerProviders(
-                                proxyHandler, // Priority 1: Proxy/Intercept
-                                scannerListener, // Priority 2: Scanner
-                                intruderListener, // Priority 3: Intruder
-                                repeaterListener, // Priority 4: Repeater
-                                socketListener, // Priority 5: WebSocket
-                                siteMapProvider, // Priority 6: Site Map
-                                scopeProvider, // Priority 7: Scope
-                                collaboratorProvider // Priority 8: Collaborator
-                );
+                // Register Providers (Manager handles sorting by priority)
+                rpcManager.registerProviders(components);
 
-                // Register Burp Listeners
-                api.proxy().registerRequestHandler(proxyHandler);
-                api.proxy().registerResponseHandler(proxyHandler);
-                api.scanner().registerAuditIssueHandler(scannerListener);
-                api.http().registerHttpHandler(repeaterListener);
-                api.http().registerHttpHandler(intruderListener);
-                api.websockets().registerWebSocketCreatedHandler(socketListener);
+                // Auto-register Burp Components
+                for (tech.chron0.burpcord.discord.ActivityProvider component : components) {
+                        if (component instanceof BurpComponent) {
+                                ((BurpComponent) component).register(api);
+                        }
+                }
         }
 }

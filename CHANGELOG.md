@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.0.1] - 2026-01-28
+## [2.1.0] - 2026-01-28
 ### Fixed
 - **Runtime Crash**: Resolved `ClassNotFoundException` via ShadowJar with dependency relocation.
 - **RPC Disconnect**: Fixed invalid `ActivityType` causing immediate disconnections.
