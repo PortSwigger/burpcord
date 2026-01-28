@@ -24,13 +24,12 @@ import java.net.URI;
  * </p>
  * 
  * @author Jon Marien
- * @version 1.5
+ * @version 1.5.2
  * @see BurpcordConfig
  * @see DiscordRPCManager
  */
 public class BurpcordSettingsTab extends JPanel {
 
-    private static final String VERSION = "1.5.1";
     private static final String AUTHOR = "Jon Marien";
     private static final String GITHUB_URL = "https://github.com/jondmarien/Burpcord";
 
@@ -434,7 +433,7 @@ public class BurpcordSettingsTab extends JPanel {
         centerPanel.add(Box.createVerticalStrut(20));
 
         // Version & Author
-        JLabel versionLabel = new JLabel("Version " + VERSION);
+        JLabel versionLabel = new JLabel("Version " + BurpcordConstants.VERSION);
         versionLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         centerPanel.add(versionLabel);
 

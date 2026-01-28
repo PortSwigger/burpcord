@@ -467,24 +467,25 @@ public class DiscordRPCManager {
             try {
                 RichPresence.Builder builder = new RichPresence.Builder();
 
-                // Get edition name (e.g., "Burp Suite Professional")
-                String edition = api.burpSuite().version().edition().displayName();
+                // Get edition name (e.g., "Professional")
+                String editionName = api.burpSuite().version().edition().displayName();
 
                 // Get version string from toString() (e.g., "Burp Suite Professional
                 // 2026.1.2-44793")
                 // Extract just the version part after the edition name
                 String fullVersion = api.burpSuite().version().toString();
-                String version = fullVersion.replace(edition, "").trim();
+                String version = fullVersion.replace("Burp Suite " + editionName, "").trim();
 
-                // Build state: version + custom state if provided
+                // Details: Version number (e.g., "2026.1.2-44793")
+                // State: Custom text or default
                 String customState = config.getCustomState();
                 String state = (customState != null && !customState.isEmpty())
-                        ? version + " • " + customState
-                        : version;
+                        ? customState
+                        : "Using Burp Suite";
 
-                builder.setDetails(edition)
+                builder.setDetails(editionName + " | " + version)
                         .setState(state)
-                        .setLargeImage("burp", "Burpcord v1.5.1")
+                        .setLargeImage("burp", "Burpcord v" + BurpcordConstants.VERSION)
                         .setStartTimestamp(startTime);
 
                 RichPresence rp = builder.build();
