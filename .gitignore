@@ -9,7 +9,9 @@ build/publications/
 build/libs/*.asc
 build/reports/
 build/manual-bundle/
+build/manual-*/
 
+burpcord-*.zip
 burpcord-complete-bundle.zip
 burpcord-maven-bundle.zip
 
