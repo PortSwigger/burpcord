@@ -1,4 +1,4 @@
-package tech.chron0.burpcord.listeners;
+package tech.chron0.burpcord.listeners.providers;
 
 import tech.chron0.burpcord.config.BurpcordConfig;
 import tech.chron0.burpcord.discord.ActivityProvider;
@@ -14,7 +14,7 @@ import com.jagrosh.discordipc.entities.RichPresence;
  * </p>
  * 
  * @author Jon Marien
- * @version 2.0.0
+ * @version 2.0.1
  */
 public class BurpcordScopeProvider implements ActivityProvider {
 

@@ -17,27 +17,39 @@ package tech.chron0.burpcord.config;
  * </ul>
  * 
  * @author Jon Marien
- * @version 2.0.0
+ * @version 2.0.1
  */
 public class BurpcordConfig {
 
     private final burp.api.montoya.persistence.Preferences preferences;
 
-    // Preference keys
-    private static final String KEY_APP_ID = "burpcord_app_id";
-    private static final String KEY_UPDATE_INTERVAL = "burpcord_update_interval";
-    private static final String KEY_SHOW_INTERCEPT = "burpcord_show_intercept";
-    private static final String KEY_SHOW_SCAN = "burpcord_show_scan";
-    private static final String KEY_SHOW_PROXY = "burpcord_show_proxy";
-    private static final String KEY_SHOW_REPEATER = "burpcord_show_repeater";
-    private static final String KEY_SHOW_INTRUDER = "burpcord_show_intruder";
-    private static final String KEY_SHOW_WEBSOCKETS = "burpcord_show_websockets";
-    private static final String KEY_SHOW_SITEMAP = "burpcord_show_sitemap";
-    private static final String KEY_SHOW_SCOPE = "burpcord_show_scope";
-    private static final String KEY_SHOW_COLLABORATOR = "burpcord_show_collaborator";
-    private static final String KEY_DEBUG_MODE = "burpcord_debug_mode";
-    private static final String KEY_CUSTOM_STATE = "burpcord_custom_state";
-    private static final String KEY_RPC_ENABLED = "burpcord_rpc_enabled";
+    // Preference keys enum
+    private enum ConfigKey {
+        APP_ID("burpcord_app_id"),
+        UPDATE_INTERVAL("burpcord_update_interval"),
+        SHOW_INTERCEPT("burpcord_show_intercept"),
+        SHOW_SCAN("burpcord_show_scan"),
+        SHOW_PROXY("burpcord_show_proxy"),
+        SHOW_REPEATER("burpcord_show_repeater"),
+        SHOW_INTRUDER("burpcord_show_intruder"),
+        SHOW_WEBSOCKETS("burpcord_show_websockets"),
+        SHOW_SITEMAP("burpcord_show_sitemap"),
+        SHOW_SCOPE("burpcord_show_scope"),
+        SHOW_COLLABORATOR("burpcord_show_collaborator"),
+        DEBUG_MODE("burpcord_debug_mode"),
+        CUSTOM_STATE("burpcord_custom_state"),
+        RPC_ENABLED("burpcord_rpc_enabled");
+
+        private final String key;
+
+        ConfigKey(String key) {
+            this.key = key;
+        }
+
+        public String getKey() {
+            return key;
+        }
+    }
 
     // Defaults
     private static final String DEFAULT_APP_ID = "1328087961230639207";
@@ -48,125 +60,125 @@ public class BurpcordConfig {
     }
 
     public String getAppId() {
-        String id = preferences.getString(KEY_APP_ID);
+        String id = preferences.getString(ConfigKey.APP_ID.getKey());
         return (id == null || id.isEmpty()) ? DEFAULT_APP_ID : id;
     }
 
     public void setAppId(String appId) {
-        preferences.setString(KEY_APP_ID, appId);
+        preferences.setString(ConfigKey.APP_ID.getKey(), appId);
     }
 
     public int getUpdateInterval() {
-        Integer val = preferences.getInteger(KEY_UPDATE_INTERVAL);
+        Integer val = preferences.getInteger(ConfigKey.UPDATE_INTERVAL.getKey());
         return (val == null) ? DEFAULT_UPDATE_INTERVAL : val;
     }
 
     public void setUpdateInterval(int seconds) {
-        preferences.setInteger(KEY_UPDATE_INTERVAL, seconds);
+        preferences.setInteger(ConfigKey.UPDATE_INTERVAL.getKey(), seconds);
     }
 
     public boolean isShowIntercept() {
-        return getBoolean(KEY_SHOW_INTERCEPT, true);
+        return getBoolean(ConfigKey.SHOW_INTERCEPT, true);
     }
 
     public void setShowIntercept(boolean value) {
-        setBoolean(KEY_SHOW_INTERCEPT, value);
+        setBoolean(ConfigKey.SHOW_INTERCEPT, value);
     }
 
     public boolean isShowScan() {
-        return getBoolean(KEY_SHOW_SCAN, true);
+        return getBoolean(ConfigKey.SHOW_SCAN, true);
     }
 
     public void setShowScan(boolean value) {
-        setBoolean(KEY_SHOW_SCAN, value);
+        setBoolean(ConfigKey.SHOW_SCAN, value);
     }
 
     public boolean isShowProxy() {
-        return getBoolean(KEY_SHOW_PROXY, true);
+        return getBoolean(ConfigKey.SHOW_PROXY, true);
     }
 
     public void setShowProxy(boolean value) {
-        setBoolean(KEY_SHOW_PROXY, value);
+        setBoolean(ConfigKey.SHOW_PROXY, value);
     }
 
     public boolean isShowRepeater() {
-        return getBoolean(KEY_SHOW_REPEATER, true);
+        return getBoolean(ConfigKey.SHOW_REPEATER, true);
     }
 
     public void setShowRepeater(boolean value) {
-        setBoolean(KEY_SHOW_REPEATER, value);
+        setBoolean(ConfigKey.SHOW_REPEATER, value);
     }
 
     public boolean isShowIntruder() {
-        return getBoolean(KEY_SHOW_INTRUDER, true);
+        return getBoolean(ConfigKey.SHOW_INTRUDER, true);
     }
 
     public void setShowIntruder(boolean value) {
-        setBoolean(KEY_SHOW_INTRUDER, value);
+        setBoolean(ConfigKey.SHOW_INTRUDER, value);
     }
 
     public boolean isShowWebSockets() {
-        return getBoolean(KEY_SHOW_WEBSOCKETS, true);
+        return getBoolean(ConfigKey.SHOW_WEBSOCKETS, true);
     }
 
     public void setShowWebSockets(boolean value) {
-        setBoolean(KEY_SHOW_WEBSOCKETS, value);
+        setBoolean(ConfigKey.SHOW_WEBSOCKETS, value);
     }
 
     public boolean isShowSiteMap() {
-        return getBoolean(KEY_SHOW_SITEMAP, true);
+        return getBoolean(ConfigKey.SHOW_SITEMAP, true);
     }
 
     public void setShowSiteMap(boolean value) {
-        setBoolean(KEY_SHOW_SITEMAP, value);
+        setBoolean(ConfigKey.SHOW_SITEMAP, value);
     }
 
     public boolean isShowScope() {
-        return getBoolean(KEY_SHOW_SCOPE, true);
+        return getBoolean(ConfigKey.SHOW_SCOPE, true);
     }
 
     public void setShowScope(boolean value) {
-        setBoolean(KEY_SHOW_SCOPE, value);
+        setBoolean(ConfigKey.SHOW_SCOPE, value);
     }
 
     public boolean isShowCollaborator() {
-        return getBoolean(KEY_SHOW_COLLABORATOR, true);
+        return getBoolean(ConfigKey.SHOW_COLLABORATOR, true);
     }
 
     public void setShowCollaborator(boolean value) {
-        setBoolean(KEY_SHOW_COLLABORATOR, value);
+        setBoolean(ConfigKey.SHOW_COLLABORATOR, value);
     }
 
     public boolean isDebugMode() {
-        return getBoolean(KEY_DEBUG_MODE, false);
+        return getBoolean(ConfigKey.DEBUG_MODE, false);
     }
 
     public void setDebugMode(boolean value) {
-        setBoolean(KEY_DEBUG_MODE, value);
+        setBoolean(ConfigKey.DEBUG_MODE, value);
     }
 
     public String getCustomState() {
-        return preferences.getString(KEY_CUSTOM_STATE);
+        return preferences.getString(ConfigKey.CUSTOM_STATE.getKey());
     }
 
     public void setCustomState(String value) {
-        preferences.setString(KEY_CUSTOM_STATE, value);
+        preferences.setString(ConfigKey.CUSTOM_STATE.getKey(), value);
     }
 
     public boolean isRpcEnabled() {
-        return getBoolean(KEY_RPC_ENABLED, true);
+        return getBoolean(ConfigKey.RPC_ENABLED, true);
     }
 
     public void setRpcEnabled(boolean value) {
-        setBoolean(KEY_RPC_ENABLED, value);
+        setBoolean(ConfigKey.RPC_ENABLED, value);
     }
 
-    private boolean getBoolean(String key, boolean def) {
-        Boolean val = preferences.getBoolean(key);
+    private boolean getBoolean(ConfigKey key, boolean def) {
+        Boolean val = preferences.getBoolean(key.getKey());
         return val == null ? def : val;
     }
 
-    private void setBoolean(String key, boolean value) {
-        preferences.setBoolean(key, value);
+    private void setBoolean(ConfigKey key, boolean value) {
+        preferences.setBoolean(key.getKey(), value);
     }
 }

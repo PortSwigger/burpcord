@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1] - 2026-01-28
+### Fixed
+- **Runtime Crash**: Resolved `ClassNotFoundException` via ShadowJar with dependency relocation.
+- **RPC Disconnect**: Fixed invalid `ActivityType` causing immediate disconnections.
+- **UI Sync**: Fixed "Disconnected" status indicator getting stuck despite successful connection.
+- **Refactor**: Organized `listeners` into `providers` and `handlers` subpackages.
+
 ## [2.0.0] - 2026-01-28
 ### Added
 - **Refactored Architecture**: Complete restructuring of the project into logical domains (`core`, `config`, `ui`, `discord`, `listeners`) for better scalability and maintenance.

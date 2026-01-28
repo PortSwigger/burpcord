@@ -1,4 +1,4 @@
-package tech.chron0.burpcord.listeners;
+package tech.chron0.burpcord.listeners.handlers;
 
 import tech.chron0.burpcord.config.BurpcordConfig;
 import tech.chron0.burpcord.discord.ActivityProvider;
@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * </p>
  * 
  * @author Jon Marien
- * @version 2.0.0
+ * @version 2.0.1
  */
 public class BurpcordProxyHandler implements ProxyRequestHandler, ProxyResponseHandler, ActivityProvider {
 

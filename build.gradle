@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'tech.chron0.burpcord'
-version = '2.0.0'
+version = '2.0.1'
 
 repositories {
     mavenCentral()
@@ -34,10 +34,7 @@ jar {
 
 shadowJar {
     archiveClassifier.set('') // Replace default JAR
-    
-    // Relocate Gson to avoid conflicts with Burp Suite's internal libraries
-    // relocate 'com.google.gson', 'tech.chron0.burpcord.deps.gson'
-    
+
     // Exclude signature files
     exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
 }
