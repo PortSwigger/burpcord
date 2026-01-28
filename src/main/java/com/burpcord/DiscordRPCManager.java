@@ -118,9 +118,11 @@ public class DiscordRPCManager {
             collaboratorClient = api.collaborator().createClient();
             collaboratorAvailable = true;
             api.logging().logToOutput("Collaborator client initialized (Pro feature)");
+            BurpcordSettingsTab.log("Collaborator client initialized (Pro feature)");
         } catch (Exception e) {
             collaboratorAvailable = false;
             api.logging().logToOutput("Collaborator not available (Community Edition or not configured)");
+            BurpcordSettingsTab.log("Collaborator not available (CE edition)");
         }
     }
 
@@ -149,7 +151,7 @@ public class DiscordRPCManager {
             client.setListener(new IPCListener() {
                 public void onReady(IPCClient client) {
                     api.logging().logToOutput("Discord IPC Ready!");
-                    BurpcordSettingsTab.log("Discord RPC connected successfully!");
+                    BurpcordSettingsTab.log("Discord IPC Ready!");
                     isConnected = true;
                     // Initialize start time on connection
                     startTime = System.currentTimeMillis() / 1000L;
