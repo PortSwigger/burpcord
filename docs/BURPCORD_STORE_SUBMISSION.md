@@ -88,6 +88,7 @@ If you want custom branding for your presence:
 
 ## Version History
 
+- **v1.5.0** - Complete UI redesign with tabbed Settings/About/Help, Burp theme integration
 - **v1.4.0** - Performance optimization with cached API calls, BApp Store compliance
 - **v1.3.x** - Montoya API integration, Site Map, Scope, Collaborator, WebSockets
 - **v1.2.x** - Custom state text, RPC toggle, configurable features

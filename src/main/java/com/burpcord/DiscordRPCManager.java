@@ -162,6 +162,7 @@ public class DiscordRPCManager {
                     api.logging().logToOutput("Discord IPC Ready!");
                     BurpcordSettingsTab.log("Discord IPC Ready!");
                     isConnected = true;
+                    BurpcordSettingsTab.updateConnectionStatusStatic(true);
                     // Initialize start time on connection
                     startTime = System.currentTimeMillis() / 1000L;
                     // Send initial presence with Burp version
@@ -174,6 +175,7 @@ public class DiscordRPCManager {
                     api.logging().logToError("Discord IPC Disconnected: " + message);
                     BurpcordSettingsTab.log("ERROR: Discord disconnected - " + message);
                     isConnected = false;
+                    BurpcordSettingsTab.updateConnectionStatusStatic(false);
                     stopPeriodicUpdates();
                 }
 
@@ -464,11 +466,26 @@ public class DiscordRPCManager {
         if (client != null && client.getStatus() == PipeStatus.CONNECTED) {
             try {
                 RichPresence.Builder builder = new RichPresence.Builder();
-                builder.setDetails(details)
-                        .setLargeImage("burp", "Burp Suite")
-                        .setStartTimestamp(startTime); // Use persistent start time
-                // Set state from config (user customizable)
-                builder.setState(config.getCustomState());
+
+                // Get edition name (e.g., "Burp Suite Professional")
+                String edition = api.burpSuite().version().edition().displayName();
+
+                // Get version string from toString() (e.g., "Burp Suite Professional
+                // 2026.1.2-44793")
+                // Extract just the version part after the edition name
+                String fullVersion = api.burpSuite().version().toString();
+                String version = fullVersion.replace(edition, "").trim();
+
+                // Build state: version + custom state if provided
+                String customState = config.getCustomState();
+                String state = (customState != null && !customState.isEmpty())
+                        ? version + " • " + customState
+                        : version;
+
+                builder.setDetails(edition)
+                        .setState(state)
+                        .setLargeImage("burp", "Burpcord v1.5.0")
+                        .setStartTimestamp(startTime);
 
                 RichPresence rp = builder.build();
 
