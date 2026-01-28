@@ -1,4 +1,6 @@
-package com.burpcord;
+package tech.chron0.burpcord.listeners;
+
+import tech.chron0.burpcord.discord.DiscordRPCManager;
 
 import burp.api.montoya.http.Http;
 import burp.api.montoya.http.message.HttpRequestResponse;

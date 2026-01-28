@@ -1,4 +1,9 @@
-package com.burpcord;
+package tech.chron0.burpcord.core;
+
+import tech.chron0.burpcord.config.BurpcordConfig;
+import tech.chron0.burpcord.discord.DiscordRPCManager;
+import tech.chron0.burpcord.listeners.*;
+import tech.chron0.burpcord.ui.BurpcordSettingsTab;
 
 import burp.api.montoya.BurpExtension;
 import burp.api.montoya.MontoyaApi;

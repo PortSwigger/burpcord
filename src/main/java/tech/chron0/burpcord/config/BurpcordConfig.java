@@ -1,4 +1,4 @@
-package com.burpcord;
+package tech.chron0.burpcord.config;
 
 /**
  * Configuration management for the Burpcord extension.
