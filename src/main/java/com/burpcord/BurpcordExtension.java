@@ -58,9 +58,6 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
         api.logging().logToOutput("Loading Burpcord...");
 
         BurpcordConfig config = new BurpcordConfig(api.persistence().preferences());
-
-        // Log startup to built-in log viewer
-        BurpcordSettingsTab.log("Loading Burpcord...");
         manager = new DiscordRPCManager(api, config);
 
         // Register Proxy handler for request/response tracking
@@ -91,14 +88,34 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
         // Register Settings Tab in Burp Suite UI
         api.userInterface().registerSuiteTab("Burpcord", new BurpcordSettingsTab(api, config, manager));
 
+        // Log ASCII banner to built-in log viewer (AFTER tab is registered!)
+        BurpcordSettingsTab.log("");
+        BurpcordSettingsTab
+                .log(" :::::::::  :::    ::: :::::::::  :::::::::   ::::::::   ::::::::  :::::::::  :::::::::   ");
+        BurpcordSettingsTab
+                .log(" :+:    :+: :+:    :+: :+:    :+: :+:    :+: :+:    :+: :+:    :+: :+:    :+: :+:    :+: ");
+        BurpcordSettingsTab
+                .log(" +:+    +:+ +:+    +:+ +:+    +:+ +:+    +:+ +:+        +:+    +:+ +:+    +:+ +:+    +:+");
+        BurpcordSettingsTab
+                .log(" +#++:++#+  +#+    +:+ +#++:++#:  +#++:++#+  +#+        +#+    +:+ +#++:++#:  +#+    +:+");
+        BurpcordSettingsTab
+                .log(" +#+    +#+ +#+    +#+ +#+    +#+ +#+        +#+        +#+    +#+ +#+    +#+ +#+    +#+");
+        BurpcordSettingsTab
+                .log(" #+#    #+# #+#    #+# #+#    #+# #+#        #+#    #+# #+#    #+# #+#    #+# #+#    #+#");
+        BurpcordSettingsTab
+                .log(" #########   ########  ###    ### ###         ########   ########  ###    ### #########  ");
+        BurpcordSettingsTab.log("        Discord Rich Presence for Burp Suite            ");
+        BurpcordSettingsTab.log("");
+        BurpcordSettingsTab.log("Burpcord initialized.");
+
         // Log enabled features to built-in log viewer
         logEnabledFeatures(config);
 
         // Log setup hints
-        BurpcordSettingsTab.log("──────────────────────────────────");
-        BurpcordSettingsTab.log("ℹ️ Tip: Use toggles below to customize displayed stats");
-        BurpcordSettingsTab.log("ℹ️ Tip: Set custom state text to personalize your status");
-        BurpcordSettingsTab.log("──────────────────────────────────");
+        BurpcordSettingsTab.log("");
+        BurpcordSettingsTab.log("  [TIP] Use toggles below to customize displayed stats");
+        BurpcordSettingsTab.log("  [TIP] Set custom state text to personalize your status");
+        BurpcordSettingsTab.log("");
         BurpcordSettingsTab.log("Connecting to Discord IPC...");
 
         manager.initialize();
@@ -125,31 +142,31 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
      * @param config The configuration to check for enabled features
      */
     private void logEnabledFeatures(BurpcordConfig config) {
-        BurpcordSettingsTab.log("┌─────────────────────────────────────┐");
-        BurpcordSettingsTab.log("│      📊 ENABLED STATUS TRACKERS     │");
-        BurpcordSettingsTab.log("├─────────────────────────────────────┤");
+        BurpcordSettingsTab.log("+-----------------------------------------------+");
+        BurpcordSettingsTab.log("|          ENABLED STATUS TRACKERS              |");
+        BurpcordSettingsTab.log("+-----------------------------------------------+");
 
         // First row
-        StringBuilder row1 = new StringBuilder("│ ");
-        row1.append(config.isShowIntercept() ? "✓ Intercept  " : "✗ Intercept  ");
-        row1.append(config.isShowScan() ? "✓ Scanner  " : "✗ Scanner  ");
-        row1.append(config.isShowProxy() ? "✓ Proxy" : "✗ Proxy");
-        BurpcordSettingsTab.log(row1.toString());
+        String r1 = String.format("| %s Intercept  %s Scanner  %s Proxy         |",
+                config.isShowIntercept() ? "[x]" : "[ ]",
+                config.isShowScan() ? "[x]" : "[ ]",
+                config.isShowProxy() ? "[x]" : "[ ]");
+        BurpcordSettingsTab.log(r1);
 
         // Second row
-        StringBuilder row2 = new StringBuilder("│ ");
-        row2.append(config.isShowRepeater() ? "✓ Repeater   " : "✗ Repeater   ");
-        row2.append(config.isShowIntruder() ? "✓ Intruder " : "✗ Intruder ");
-        row2.append(config.isShowSiteMap() ? "✓ SiteMap" : "✗ SiteMap");
-        BurpcordSettingsTab.log(row2.toString());
+        String r2 = String.format("| %s Repeater   %s Intruder %s SiteMap       |",
+                config.isShowRepeater() ? "[x]" : "[ ]",
+                config.isShowIntruder() ? "[x]" : "[ ]",
+                config.isShowSiteMap() ? "[x]" : "[ ]");
+        BurpcordSettingsTab.log(r2);
 
         // Third row
-        StringBuilder row3 = new StringBuilder("│ ");
-        row3.append(config.isShowScope() ? "✓ Scope      " : "✗ Scope      ");
-        row3.append(config.isShowCollaborator() ? "✓ Collab   " : "✗ Collab   ");
-        row3.append(config.isShowWebSockets() ? "✓ WebSocket" : "✗ WebSocket");
-        BurpcordSettingsTab.log(row3.toString());
+        String r3 = String.format("| %s Scope      %s Collab   %s WebSocket     |",
+                config.isShowScope() ? "[x]" : "[ ]",
+                config.isShowCollaborator() ? "[x]" : "[ ]",
+                config.isShowWebSockets() ? "[x]" : "[ ]");
+        BurpcordSettingsTab.log(r3);
 
-        BurpcordSettingsTab.log("└─────────────────────────────────────┘");
+        BurpcordSettingsTab.log("+-----------------------------------------------+");
     }
 }

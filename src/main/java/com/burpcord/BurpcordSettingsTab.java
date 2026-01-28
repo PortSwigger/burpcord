@@ -188,7 +188,6 @@ public class BurpcordSettingsTab extends JPanel {
         add(clearLogBtn);
 
         instance = this;
-        log("Burpcord initialized.");
     }
 
     public static void log(String message) {
