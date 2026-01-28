@@ -45,25 +45,25 @@ public class SettingsPanel extends JPanel {
         intervalSpinner = new JSpinner(new SpinnerNumberModel(config.getUpdateInterval(), 1, 60, 1));
         customStateField = new JTextField(config.getCustomState(), 25);
 
-        // Feature checkboxes
-        showInterceptCheck = new JCheckBox("Show Intercept on Discord", config.isShowIntercept());
-        showInterceptCheck.setToolTipText("Show intercept on/off status in Discord presence");
-        showScanCheck = new JCheckBox("Show Scanner on Discord", config.isShowScan());
-        showScanCheck.setToolTipText("Show active scan count in Discord presence");
-        showProxyCheck = new JCheckBox("Show Proxy on Discord", config.isShowProxy());
-        showProxyCheck.setToolTipText("Show proxy request count in Discord presence");
-        showRepeaterCheck = new JCheckBox("Show Repeater on Discord", config.isShowRepeater());
-        showRepeaterCheck.setToolTipText("Show repeater tab count in Discord presence");
-        showIntruderCheck = new JCheckBox("Show Intruder on Discord", config.isShowIntruder());
-        showIntruderCheck.setToolTipText("Show intruder attack count in Discord presence");
-        showSiteMapCheck = new JCheckBox("Show Site Map on Discord", config.isShowSiteMap());
-        showSiteMapCheck.setToolTipText("Show site map host count in Discord presence");
-        showScopeCheck = new JCheckBox("Show Scope on Discord", config.isShowScope());
-        showScopeCheck.setToolTipText("Show target scope count in Discord presence");
-        showCollaboratorCheck = new JCheckBox("Show Collaborator on Discord", config.isShowCollaborator());
-        showCollaboratorCheck.setToolTipText("Show Collaborator interactions (Burp Pro only)");
-        showWebSocketsCheck = new JCheckBox("Show WebSocket on Discord", config.isShowWebSockets());
-        showWebSocketsCheck.setToolTipText("Show WebSocket message count in Discord presence");
+        // Feature checkboxes (using helper for cleaner code)
+        showInterceptCheck = createCheckboxWithTooltip("Show Intercept on Discord", config.isShowIntercept(),
+                "Show intercept on/off status in Discord presence");
+        showScanCheck = createCheckboxWithTooltip("Show Scanner on Discord", config.isShowScan(),
+                "Show active scan count in Discord presence");
+        showProxyCheck = createCheckboxWithTooltip("Show Proxy on Discord", config.isShowProxy(),
+                "Show proxy request count in Discord presence");
+        showRepeaterCheck = createCheckboxWithTooltip("Show Repeater on Discord", config.isShowRepeater(),
+                "Show repeater tab count in Discord presence");
+        showIntruderCheck = createCheckboxWithTooltip("Show Intruder on Discord", config.isShowIntruder(),
+                "Show intruder attack count in Discord presence");
+        showSiteMapCheck = createCheckboxWithTooltip("Show Site Map on Discord", config.isShowSiteMap(),
+                "Show site map host count in Discord presence");
+        showScopeCheck = createCheckboxWithTooltip("Show Scope on Discord", config.isShowScope(),
+                "Show target scope count in Discord presence");
+        showCollaboratorCheck = createCheckboxWithTooltip("Show Collaborator on Discord", config.isShowCollaborator(),
+                "Show Collaborator interactions (Burp Pro only)");
+        showWebSocketsCheck = createCheckboxWithTooltip("Show WebSocket on Discord", config.isShowWebSockets(),
+                "Show WebSocket message count in Discord presence");
 
         // Top section: Connection Settings + Status
         JPanel topSection = new JPanel(new GridLayout(1, 2, 15, 0));
@@ -327,5 +327,20 @@ public class SettingsPanel extends JPanel {
 
     private void logEnabledFeatures() {
         BurpcordExtension.logEnabledFeatures(config);
+    }
+
+    /**
+     * Helper method to create a checkbox with a tooltip in one line.
+     * Reduces boilerplate for feature checkboxes.
+     *
+     * @param label    The checkbox label
+     * @param selected Initial selection state
+     * @param tooltip  The tooltip text
+     * @return A configured JCheckBox
+     */
+    private JCheckBox createCheckboxWithTooltip(String label, boolean selected, String tooltip) {
+        JCheckBox checkbox = new JCheckBox(label, selected);
+        checkbox.setToolTipText(tooltip);
+        return checkbox;
     }
 }

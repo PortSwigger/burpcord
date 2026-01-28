@@ -4,6 +4,7 @@ import tech.chron0.burpcord.config.BurpcordConfig;
 import tech.chron0.burpcord.discord.ActivityProvider;
 
 import burp.api.montoya.core.ToolType;
+
 import burp.api.montoya.http.handler.HttpHandler;
 import burp.api.montoya.http.handler.HttpRequestToBeSent;
 import burp.api.montoya.http.handler.HttpResponseReceived;
