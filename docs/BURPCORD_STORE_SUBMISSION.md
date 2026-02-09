@@ -93,6 +93,24 @@ If you want custom branding for your presence:
 
 ## Version History
 
+### [v2.3.0] - 2026-02-09
+- **Default App ID Fix**: Corrected incorrect default Discord Application ID that returned HTTP 404
+- **StatusDisplayType NPE**: Fixed crash from uninitialized `statusDisplayType` field in DiscordIPC 0.11.2
+- **App ID Validation**: Invalid App IDs now fail fast with a clear error message
+- **Connect Timeout**: 10-second timeout per IPC attempt prevents indefinite blocking
+- **Retry Logic**: 5 retries with capped exponential backoff (3s → 30s max)
+
+### [v2.2.1] - 2026-02-09
+- **Shadow JAR Packaging**: Fixed `ClassNotFoundException` caused by thin JAR overwriting fat JAR
+- **UTF-8 Encoding**: Fixed unmappable character warning on Windows
+- **Build System**: Conditional GPG signing for GitHub Packages publish
+
+### [v2.2.0] - 2026-02-09
+- **IPC Handshake NPE**: Fixed null `data` crash with retry-with-backoff on a background thread
+- **Dependency Upgrade**: DiscordIPC `0.10.2` → `0.11.2` with new API and null-safe presence cleanup
+- **API Migration**: Migrated to `setLargeImageWithTooltip`/`setSmallImageWithTooltip` API
+- **Connection Resilience**: Dedicated daemon thread with exponential backoff retries
+
 ### [v2.1.0] - 2026-01-28
 - **Major Refactoring**: Introduced component priority system and OOP registration logic
 - **Shadow Jar**: Improved build process with dependency relocation to fix runtime crashes
