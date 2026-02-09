@@ -1,5 +1,18 @@
 # Burpcord Release Notes
 
+## [v2.3.0] - 2026-02-09
+### 🐛 Bug Fixes
+- **Default App ID**: Fixed incorrect default Discord Application ID (`1328087961230639207` → `1457789708753965206`). The old ID returned HTTP 404, causing silent handshake timeouts.
+- **StatusDisplayType NPE**: Fixed `Cannot invoke "StatusDisplayType.ordinal()" because "this.statusDisplayType" is null` crash when sending presence updates. The new `statusDisplayType` field in DiscordIPC 0.11.2 was not being initialized.
+- **Presence Update Safety**: Wrapped `sendRichPresence` in try/catch to prevent unhandled exceptions from crashing the scheduler.
+
+### 🔧 Improvements
+- **App ID Validation**: Invalid or unregistered App IDs now fail fast with a clear error message and hint instead of silently hanging.
+- **Connect Timeout**: Each IPC connect attempt now has a 10-second timeout to prevent indefinite blocking when Discord's pipe is open but unresponsive.
+- **Retry Logic**: Increased retries from 3 to 5 with capped exponential backoff (3s → 30s max) for more resilience on slower machines.
+
+---
+
 ## [v2.2.1] - 2026-02-09
 ### 🐛 Bug Fixes
 - **Shadow JAR Packaging**: Fixed `ClassNotFoundException: com.jagrosh.discordipc.IPCListener` caused by the plain `jar` task overwriting the fat shadow JAR during publish. Ensured `shadowJar` always runs last.

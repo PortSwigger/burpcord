@@ -9,10 +9,10 @@ build-all:
 	cmd /c gradlew.bat clean shadowJar sourcesJar plainJavadocJar
 
 publish-core:
-	cmd /c gradlew.bat publishToGitHubPackages
+	cmd /c gradlew.bat publishAllPublicationsToGithubPackagesRepository
 
 publish-all:
-	cmd /c gradlew.bat publishToGitHubPackages publishMavenPublicationToGithubPackagesRepository
+	cmd /c gradlew.bat publishAllPublicationsToGithubPackagesRepository publishMavenPublicationToGithubPackagesRepository
 
 clean:
 	cmd /c gradlew.bat clean

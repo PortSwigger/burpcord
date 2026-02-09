@@ -17,7 +17,7 @@ package tech.chron0.burpcord.config;
  * </ul>
  * 
  * @author Jon Marien
- * @version 2.2.1
+ * @version 2.3.0
  */
 public class BurpcordConfig {
 
@@ -52,7 +52,7 @@ public class BurpcordConfig {
     }
 
     // Defaults
-    private static final String DEFAULT_APP_ID = "1328087961230639207";
+    private static final String DEFAULT_APP_ID = "1457789708753965206";
     private static final int DEFAULT_UPDATE_INTERVAL = 30;
 
     public BurpcordConfig(burp.api.montoya.persistence.Preferences preferences) {

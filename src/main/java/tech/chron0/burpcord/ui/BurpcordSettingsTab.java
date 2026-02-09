@@ -27,7 +27,7 @@ import java.util.List;
  * </p>
  * 
  * @author Jon Marien
- * @version 2.2.1
+ * @version 2.3.0
  * @see BurpcordConfig
  * @see DiscordRPCManager
  */
