@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  * </ul>
  * 
  * @author Jon Marien
- * @version 2.1.0
+ * @version 2.2.0
  */
 public class DiscordRPCManager {
 
@@ -80,73 +80,116 @@ public class DiscordRPCManager {
         providers.sort(java.util.Comparator.comparingInt(ActivityProvider::getPriority));
     }
 
+    private static final int MAX_CONNECT_RETRIES = 3;
+    private static final long INITIAL_RETRY_DELAY_MS = 2000;
+
     /**
      * Initializes the IPC client and starts the update scheduler.
+     * <p>
+     * Connection is attempted on a background thread with exponential backoff
+     * retries to handle transient Discord IPC handshake failures (e.g., null
+     * {@code data} in the handshake response when Discord is not fully ready).
+     * </p>
      */
     public void initialize() {
         if (!config.isRpcEnabled())
             return;
 
-        try {
-            long appId = Long.parseLong(config.getAppId());
-            client = new IPCClient(appId);
-            client.setListener(new IPCListener() {
-                @Override
-                public void onReady(IPCClient client) {
-                    isConnected = true;
-                    BurpcordSettingsTab.log("Connected to Discord IPC.");
-                    BurpcordSettingsTab.updateConnectionStatusStatic(true);
-                    updatePresence("Ready");
+        Thread connectThread = new Thread(() -> {
+            try {
+                connectWithRetry();
+            } catch (Exception e) {
+                BurpcordSettingsTab.log("Burpcord: Failed to connect to Discord IPC after "
+                        + MAX_CONNECT_RETRIES + " attempts: " + e.getMessage());
+                System.err.println("Burpcord: Failed to connect to Discord IPC.");
+                e.printStackTrace();
+            }
+        }, "Burpcord-IPC-Connect");
+        connectThread.setDaemon(true);
+        connectThread.start();
+    }
+
+    /**
+     * Attempts to connect to Discord IPC with exponential backoff retries.
+     *
+     * @throws Exception if all retry attempts are exhausted.
+     */
+    private void connectWithRetry() throws Exception {
+        long appId = Long.parseLong(config.getAppId());
+
+        Exception lastException = null;
+        for (int attempt = 1; attempt <= MAX_CONNECT_RETRIES; attempt++) {
+            try {
+                client = new IPCClient(appId);
+                client.setListener(createIPCListener());
+                client.connect();
+                startScheduler();
+                return; // Success
+            } catch (Exception e) {
+                lastException = e;
+                if (attempt < MAX_CONNECT_RETRIES) {
+                    long delay = INITIAL_RETRY_DELAY_MS * (1L << (attempt - 1)); // 2s, 4s, 8s
+                    BurpcordSettingsTab.log("Discord IPC connect attempt " + attempt + "/" + MAX_CONNECT_RETRIES
+                            + " failed: " + e.getMessage() + " — retrying in " + (delay / 1000) + "s...");
+                    Thread.sleep(delay);
                 }
-
-                @Override
-                public void onDisconnect(IPCClient client, Throwable t) {
-                    isConnected = false;
-                    BurpcordSettingsTab.log("Disconnected from Discord IPC.");
-                    BurpcordSettingsTab.updateConnectionStatusStatic(false);
-                }
-
-                @Override
-                public void onPacketSent(IPCClient client, Packet packet) {
-                    // No-op
-                }
-
-                @Override
-                public void onPacketReceived(IPCClient client, Packet packet) {
-                    // No-op
-                }
-
-                @Override
-                public void onActivityJoin(IPCClient client, String secret) {
-                    // No-op
-                }
-
-                @Override
-                public void onActivitySpectate(IPCClient client, String secret) {
-                    // No-op
-                }
-
-                @Override
-                public void onActivityJoinRequest(IPCClient client, String secret, User user) {
-                    // No-op
-                }
-
-                @Override
-                public void onClose(IPCClient client, JsonObject json) {
-                    isConnected = false;
-                    BurpcordSettingsTab.log("Discord IPC Closed.");
-                    BurpcordSettingsTab.updateConnectionStatusStatic(false);
-                }
-            });
-
-            client.connect();
-            startScheduler();
-
-        } catch (Exception e) {
-            BurpcordSettingsTab.log("Burpcord: Failed to connect to Discord IPC: " + e.getMessage());
-            System.err.println("Burpcord: Failed to connect to Discord IPC.");
-            e.printStackTrace(); // Ensure full stack trace is visible in Burp Output
+            }
         }
+        throw lastException;
+    }
+
+    /**
+     * Creates the {@link IPCListener} for handling IPC lifecycle events.
+     */
+    private IPCListener createIPCListener() {
+        return new IPCListener() {
+            @Override
+            public void onReady(IPCClient client) {
+                isConnected = true;
+                BurpcordSettingsTab.log("Connected to Discord IPC.");
+                BurpcordSettingsTab.updateConnectionStatusStatic(true);
+                updatePresence("Ready");
+            }
+
+            @Override
+            public void onDisconnect(IPCClient client, Throwable t) {
+                isConnected = false;
+                BurpcordSettingsTab.log("Disconnected from Discord IPC.");
+                BurpcordSettingsTab.updateConnectionStatusStatic(false);
+            }
+
+            @Override
+            public void onPacketSent(IPCClient client, Packet packet) {
+                // No-op
+            }
+
+            @Override
+            public void onPacketReceived(IPCClient client, Packet packet) {
+                // No-op
+            }
+
+            @Override
+            public void onActivityJoin(IPCClient client, String secret) {
+                // No-op
+            }
+
+            @Override
+            public void onActivitySpectate(IPCClient client, String secret) {
+                // No-op
+            }
+
+            @Override
+            public void onActivityJoinRequest(IPCClient client, String secret, User user) {
+                // No-op
+            }
+
+            @Override
+            public void onClose(IPCClient client, JsonObject json) {
+                isConnected = false;
+                BurpcordSettingsTab.log("Discord IPC Closed.");
+                BurpcordSettingsTab.updateConnectionStatusStatic(false);
+            }
+        };
     }
 
     /**
@@ -203,7 +246,7 @@ public class DiscordRPCManager {
         // Explicitly set ActivityType to prevent NPE in library
         builder.setActivityType(ActivityType.Playing);
 
-        builder.setLargeImage("burp", "Burp Suite Professional");
+        builder.setLargeImageWithTooltip("burp", "Burp Suite Professional");
         builder.setStartTimestamp(startTime.toEpochSecond());
 
         String state = config.getCustomState();

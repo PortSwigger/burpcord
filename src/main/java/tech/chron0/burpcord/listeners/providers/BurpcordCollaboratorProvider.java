@@ -13,7 +13,7 @@ import com.jagrosh.discordipc.entities.RichPresence;
  * </p>
  * 
  * @author Jon Marien
- * @version 2.1.0
+ * @version 2.2.0
  */
 public class BurpcordCollaboratorProvider implements ActivityProvider {
 
@@ -34,7 +34,7 @@ public class BurpcordCollaboratorProvider implements ActivityProvider {
     public void updatePresence(RichPresence.Builder builder) {
         builder.setDetails("Burp Collaborator");
         builder.setState("Tracking Interactions");
-        builder.setSmallImage("collaborator", "Collaborator");
+        builder.setSmallImageWithTooltip("collaborator", "Collaborator");
     }
 
     @Override

@@ -1,5 +1,17 @@
 # Burpcord Release Notes
 
+## [v2.2.0] - 2026-02-09
+### 🐛 Bug Fixes
+- **IPC Handshake NPE**: Fixed `Cannot invoke "JsonObject.getAsJsonObject(String)" because "data" is null` crash on connect when Discord is not fully ready. Added retry-with-backoff (3 attempts, exponential delay) on a background thread.
+- **IPC Shutdown**: Upgraded DiscordIPC library which re-adds null support for `sendRichPresence` calls, required for clean IPC shutdown due to recent Discord breakage.
+
+### 🔧 Improvements
+- **Dependency Upgrade**: Upgraded DiscordIPC from `0.10.2` → `0.11.2` (new Maven group ID `io.github.cdagaming`), picking up updated Gson (2.13.1), SLF4J (2.0.17), new RPC fields (`status_display_type`, `name`, URL support for images/state/details), and null-safe presence cleanup.
+- **API Migration**: Migrated all `setLargeImage`/`setSmallImage` calls to new `setLargeImageWithTooltip`/`setSmallImageWithTooltip` API to match DiscordIPC 0.11.x breaking changes.
+- **Connection Resilience**: IPC connection now runs on a dedicated daemon thread (`Burpcord-IPC-Connect`) with exponential backoff retries, preventing extension load failures when Discord is slow to initialize.
+
+---
+
 ## [v2.1.0] - 2026-01-28
 ### 🚀 Major Refactoring & Improvements
 - **Component Priority System**: Introduced a robust priority system (`getPriority()`) for `ActivityProvider`s from level 10 to 80, ensuring deterministic and logical component registration order.

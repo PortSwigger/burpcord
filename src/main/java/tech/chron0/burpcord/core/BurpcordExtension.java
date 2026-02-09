@@ -38,7 +38,7 @@ import javax.swing.SwingUtilities;
  * </ul>
  * 
  * @author Jon Marien
- * @version 2.1.0
+ * @version 2.2.0
  * @see <a href="https://discord.gg/wXWJp9M9Cq">Burp Suite Discord</a>
  */
 public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandler {

@@ -23,7 +23,7 @@ import burp.api.montoya.MontoyaApi;
  * </p>
  * 
  * @author Jon Marien
- * @version 2.1.0
+ * @version 2.2.0
  */
 public class BurpcordIntruderListener implements HttpHandler, ActivityProvider, BurpComponent {
 
@@ -60,7 +60,7 @@ public class BurpcordIntruderListener implements HttpHandler, ActivityProvider, 
     public void updatePresence(RichPresence.Builder builder) {
         builder.setDetails("Fuzzing / Brute Forcing");
         builder.setState("Requests sent: " + attackCount.get());
-        builder.setSmallImage("intruder", "Intruder");
+        builder.setSmallImageWithTooltip("intruder", "Intruder");
     }
 
     @Override

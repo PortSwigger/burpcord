@@ -14,7 +14,7 @@ import com.jagrosh.discordipc.entities.RichPresence;
  * </p>
  * 
  * @author Jon Marien
- * @version 2.1.0
+ * @version 2.2.0
  */
 public class BurpcordSiteMapProvider implements ActivityProvider {
 
@@ -56,7 +56,7 @@ public class BurpcordSiteMapProvider implements ActivityProvider {
         // Use cached value
         builder.setDetails("Site Map");
         builder.setState(cachedCount + " items");
-        builder.setSmallImage("target", "Site Map");
+        builder.setSmallImageWithTooltip("target", "Site Map");
     }
 
     @Override

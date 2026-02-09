@@ -24,7 +24,7 @@ import burp.api.montoya.MontoyaApi;
  * </p>
  * 
  * @author Jon Marien
- * @version 2.1.0
+ * @version 2.2.0
  */
 public class BurpcordWebSocketListener
         implements WebSocketCreatedHandler, MessageHandler, ActivityProvider, BurpComponent {
@@ -68,7 +68,7 @@ public class BurpcordWebSocketListener
     public void updatePresence(RichPresence.Builder builder) {
         builder.setDetails("WebSocket Traffic");
         builder.setState("Messages: " + messageCount.get());
-        builder.setSmallImage("websocket", "WebSocket");
+        builder.setSmallImageWithTooltip("websocket", "WebSocket");
     }
 
     @Override

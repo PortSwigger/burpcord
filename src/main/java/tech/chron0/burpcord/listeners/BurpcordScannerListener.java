@@ -19,7 +19,7 @@ import burp.api.montoya.MontoyaApi;
  * </p>
  * 
  * @author Jon Marien
- * @version 2.1.0
+ * @version 2.2.0
  */
 public class BurpcordScannerListener implements AuditIssueHandler, ActivityProvider, BurpComponent {
 
@@ -46,7 +46,7 @@ public class BurpcordScannerListener implements AuditIssueHandler, ActivityProvi
     public void updatePresence(RichPresence.Builder builder) {
         builder.setDetails("Scanning Targets");
         builder.setState("Issues Found: " + issueCount.get());
-        builder.setSmallImage("scanner", "Scanner");
+        builder.setSmallImageWithTooltip("scanner", "Scanner");
     }
 
     @Override

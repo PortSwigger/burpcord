@@ -14,7 +14,7 @@ import com.jagrosh.discordipc.entities.RichPresence;
  * </p>
  * 
  * @author Jon Marien
- * @version 2.1.0
+ * @version 2.2.0
  */
 public class BurpcordScopeProvider implements ActivityProvider {
 
@@ -37,7 +37,7 @@ public class BurpcordScopeProvider implements ActivityProvider {
     public void updatePresence(RichPresence.Builder builder) {
         builder.setDetails("Scope Configured");
         builder.setState("Focusing on target scope");
-        builder.setSmallImage("target", "Scope");
+        builder.setSmallImageWithTooltip("target", "Scope");
     }
 
     @Override

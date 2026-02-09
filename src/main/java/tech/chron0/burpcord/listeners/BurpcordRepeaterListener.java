@@ -24,7 +24,7 @@ import burp.api.montoya.MontoyaApi;
  * </p>
  * 
  * @author Jon Marien
- * @version 2.1.0
+ * @version 2.2.0
  */
 public class BurpcordRepeaterListener implements HttpHandler, ActivityProvider, BurpComponent {
 
@@ -61,7 +61,7 @@ public class BurpcordRepeaterListener implements HttpHandler, ActivityProvider, 
     public void updatePresence(RichPresence.Builder builder) {
         builder.setDetails("Manual Testing (Repeater)");
         builder.setState("Requests sent: " + requestCount.get());
-        builder.setSmallImage("repeater", "Repeater");
+        builder.setSmallImageWithTooltip("repeater", "Repeater");
     }
 
     @Override

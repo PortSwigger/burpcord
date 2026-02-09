@@ -26,7 +26,7 @@ import tech.chron0.burpcord.listeners.BurpComponent;
  * </p>
  * 
  * @author Jon Marien
- * @version 2.1.0
+ * @version 2.2.0
  */
 public class BurpcordProxyHandler
         implements ProxyRequestHandler, ProxyResponseHandler, ActivityProvider, BurpComponent {
@@ -74,7 +74,7 @@ public class BurpcordProxyHandler
     public void updatePresence(RichPresence.Builder builder) {
         builder.setDetails("Proxying Traffic");
         builder.setState("Requests: " + requestCount.get());
-        builder.setSmallImage("proxy", "Proxy");
+        builder.setSmallImageWithTooltip("proxy", "Proxy");
     }
 
     @Override
