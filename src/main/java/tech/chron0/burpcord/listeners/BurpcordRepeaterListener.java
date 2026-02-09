@@ -24,7 +24,7 @@ import burp.api.montoya.MontoyaApi;
  * </p>
  * 
  * @author Jon Marien
- * @version 2.2.0
+ * @version 2.2.1
  */
 public class BurpcordRepeaterListener implements HttpHandler, ActivityProvider, BurpComponent {
 

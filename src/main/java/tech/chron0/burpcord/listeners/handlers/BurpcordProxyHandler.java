@@ -26,7 +26,7 @@ import tech.chron0.burpcord.listeners.BurpComponent;
  * </p>
  * 
  * @author Jon Marien
- * @version 2.2.0
+ * @version 2.2.1
  */
 public class BurpcordProxyHandler
         implements ProxyRequestHandler, ProxyResponseHandler, ActivityProvider, BurpComponent {

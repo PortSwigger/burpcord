@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'io.github.jondmarien'
-version = '2.2.0'
+version = '2.2.1'
 
 repositories {
     mavenCentral()
@@ -43,10 +43,19 @@ shadowJar {
 
     // Exclude signature files
     exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+
+    // Shadow jar must always run after jar so it overwrites the thin jar
+    dependsOn jar
 }
 
 // Build should produce the shadow jar
 build.dependsOn shadowJar
+
+// Ensure all tasks that consume the jar file depend on shadowJar
+tasks.withType(AbstractPublishToMaven).configureEach {
+    dependsOn shadowJar
+    mustRunAfter shadowJar
+}
 
 mavenPublishing {
     coordinates("io.github.jondmarien", "burpcord", version)

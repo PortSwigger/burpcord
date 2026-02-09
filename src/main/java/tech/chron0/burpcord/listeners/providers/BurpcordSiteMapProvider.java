@@ -14,7 +14,7 @@ import com.jagrosh.discordipc.entities.RichPresence;
  * </p>
  * 
  * @author Jon Marien
- * @version 2.2.0
+ * @version 2.2.1
  */
 public class BurpcordSiteMapProvider implements ActivityProvider {
 

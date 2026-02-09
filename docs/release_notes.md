@@ -1,5 +1,15 @@
 # Burpcord Release Notes
 
+## [v2.2.1] - 2026-02-09
+### 🐛 Bug Fixes
+- **Shadow JAR Packaging**: Fixed `ClassNotFoundException: com.jagrosh.discordipc.IPCListener` caused by the plain `jar` task overwriting the fat shadow JAR during publish. Ensured `shadowJar` always runs last.
+- **UTF-8 Encoding**: Fixed unmappable character warning on Windows by setting `compileJava` and `javadoc` encoding to UTF-8.
+
+### 🔧 Improvements
+- **Build System**: Made GPG signing conditional (only when keys are available), allowing GitHub Packages publish without GPG configuration.
+
+---
+
 ## [v2.2.0] - 2026-02-09
 ### 🐛 Bug Fixes
 - **IPC Handshake NPE**: Fixed `Cannot invoke "JsonObject.getAsJsonObject(String)" because "data" is null` crash on connect when Discord is not fully ready. Added retry-with-backoff (3 attempts, exponential delay) on a background thread.
