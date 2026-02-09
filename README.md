@@ -1,10 +1,10 @@
 # Burpcord - Discord Rich Presence for Burp Suite
 
 [![GitHub Package](https://img.shields.io/badge/GitHub-Packages-blue)](https://github.com/jondmarien/Burpcord/packages)
-[![Version](https://img.shields.io/badge/v2.1.0-blue.svg)](https://github.com/jondmarien/Burpcord/releases/tag/v2.1.0)
+[![Version](https://img.shields.io/badge/v2.3.0-blue.svg)](https://github.com/jondmarien/Burpcord/releases/tag/v2.3.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Burpcord v2.1.0** is a complete rewrite of the original Burp Suite extension that integrates with Discord Rich Presence. It displays your active security testing workflow on your Discord profile in real-time, built with a robust, modular architecture.
+**Burpcord v2.3.0** is a complete rewrite of the original Burp Suite extension that integrates with Discord Rich Presence. It displays your active security testing workflow on your Discord profile in real-time, built with a robust, modular architecture and resilient IPC connection handling.
 
 ## 🚀 Features
 
@@ -28,6 +28,9 @@
   - **Priority Queue**: Intelligently rotates status based on what you are *actually* doing (e.g., Intercept > Scanning > Idle).
   - **Custom States**: Set your own status message (e.g., "Bug Bounty Hunting").
 - **Robust Connection**:
+  - **Retry with Backoff**: 5 automatic retries with capped exponential backoff (3s → 30s) on startup.
+  - **Connect Timeout**: 10-second timeout per attempt prevents indefinite blocking.
+  - **App ID Validation**: Invalid or unregistered App IDs fail fast with a clear error message.
   - **Auto-Reconnect**: Built-in "Reload RPC" button to fix connection issues instantly.
   - **Status Indicator**: Visual feedback in the UI showing connection state (Connected/Disconnected).
 - **Embedded Logging**:
@@ -36,7 +39,7 @@
 
 ## 🛠️ Installation
 
-1. **Download**: Get the latest `Burpcord-2.1.0.jar` from the [Releases](https://github.com/jondmarien/burpcord/releases) page.
+1. **Download**: Get the latest `Burpcord-2.3.0.jar` from the [Releases](https://github.com/jondmarien/burpcord/releases) page.
 2. **Load in Burp Suite**:
    - Go to **Extensions** → **Installed**.
    - Click **Add**.
@@ -71,7 +74,7 @@ Enable or disable specific tracking modules:
 - JDK 21+
 - Gradle 8.0+
 
-Burpcord v2.1.0 uses the **ShadowJar** plugin to bundle dependencies and prevent runtime conflicts with Burp Suite.
+Burpcord v2.3.0 uses the **ShadowJar** plugin to bundle dependencies and prevent runtime conflicts with Burp Suite.
 
 ```bash
 git clone https://github.com/jondmarien/burpcord.git
@@ -82,11 +85,13 @@ cd burpcord
 ```
 
 The compiled artifact will be located at:
-`build/libs/Burpcord-2.1.0.jar`
+`build/libs/Burpcord-2.3.0.jar`
 
 ## 🔧 Troubleshooting
 
 - **"Disconnected" Status**: Click the **Reload Discord RPC** button in the top right.
+- **Connection Timeout / Retries**: The extension retries 5 times with increasing delays. If all fail, check the log for hints.
+- **Invalid App ID**: If you see a 404 error, verify your Discord App ID in Settings or reset to the default.
 - **No Status on Discord**:
   - Check **User Settings** → **Activity Privacy** → "Display current activity as a status message".
   - Ensure no other RPC apps are conflicting.
