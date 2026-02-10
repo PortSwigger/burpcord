@@ -119,6 +119,14 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
                         sb.append("[Repeater] ");
                 if (config.isShowIntruder())
                         sb.append("[Intruder] ");
+                if (config.isShowSiteMap())
+                        sb.append("[Site Map] ");
+                if (config.isShowScope())
+                        sb.append("[Scope] ");
+                if (config.isShowCollaborator())
+                        sb.append("[Collaborator] ");
+                if (config.isShowWebSockets())
+                        sb.append("[WebSocket] ");
                 BurpcordSettingsTab.log(sb.toString());
         }
 

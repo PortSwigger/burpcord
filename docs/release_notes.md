@@ -1,5 +1,13 @@
 # Burpcord Release Notes
 
+## [v2.5.1] - 2026-02-10
+
+### 🐛 Bug Fixes
+
+- **Feature Log Completeness**: `logEnabledFeatures()` in `BurpcordExtension.java` now includes `isShowSiteMap()`, `isShowScope()`, `isShowCollaborator()`, and `isShowWebSockets()` checks. Previously only 5 of 9 features were logged.
+
+---
+
 ## [v2.5.0] - 2026-02-10
 
 ### ✨ Enhancements

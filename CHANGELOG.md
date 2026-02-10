@@ -1,5 +1,13 @@
 # Burpcord Changelog
 
+## [v2.5.1] - 2026-02-10
+
+### 🐛 Bug Fixes
+
+- **Feature Log Completeness**: The "Enabled Features" log now correctly shows all 9 features, including Site Map, Scope, Collaborator, and WebSocket (previously only listed 5).
+
+---
+
 ## [v2.5.0] - 2026-02-10
 
 ### ✨ Enhancements

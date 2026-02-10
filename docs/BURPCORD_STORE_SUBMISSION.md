@@ -93,6 +93,9 @@ If you want custom branding for your presence:
 
 ## Version History
 
+### [v2.5.1] - 2026-02-10
+- **Bug Fix**: Enabled features log now shows all 9 features instead of only 5
+
 ### [v2.5.0] - 2026-02-10
 - **Real Collaborator Tracking**: Live interaction counts via Montoya Collaborator API (Pro only, graceful fallback)
 - **Real Scope Tracking**: Event-driven scope change tracking via ScopeChangeHandler
