@@ -2,6 +2,7 @@
 
 [![GitHub Package](https://img.shields.io/badge/GitHub-Packages-blue)](https://github.com/jondmarien/Burpcord/packages)
 [![Version](https://img.shields.io/badge/v2.3.0-blue.svg)](https://github.com/jondmarien/Burpcord/releases/tag/v2.3.0)
+[![Changelog](https://img.shields.io/badge/Changelog-View-blue)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Burpcord v2.3.0** is a complete rewrite of the original Burp Suite extension that integrates with Discord Rich Presence. It displays your active security testing workflow on your Discord profile in real-time, built with a robust, modular architecture and resilient IPC connection handling.
@@ -9,6 +10,7 @@
 ## 🚀 Features
 
 ### Core Activity Tracking (Real-Time)
+
 - **Intercept**: Shows when you are actively intercepting traffic (Requests captured).
 - **Scanner**: Displays active/passive scan status, issue counts, and severity (High/Medium).
 - **Proxy**: Tracks request history count directly from the HTTP Proxy.
@@ -16,14 +18,16 @@
 - **Intruder**: Displays active active attacks and request counts.
 
 ### Advanced Metrics
+
 - **Burp Version**: Displays edition & version (e.g., "Burp Suite Professional 2026.1.2").
 - **Project Stats**:
-    - **Site Map**: Tracks mapped endpoints.
-    - **Scope**: Counts unique in-scope targets.
-    - **WebSockets**: Monitors active WebSocket message flow.
+  - **Site Map**: Tracks mapped endpoints.
+  - **Scope**: Counts unique in-scope targets.
+  - **WebSockets**: Monitors active WebSocket message flow.
 - **Burp Collaborator**: (Pro Only) Real-time tracking of Out-of-Band (OOB) interactions.
 
 ### User Experience
+
 - **Smart Status System**:
   - **Priority Queue**: Intelligently rotates status based on what you are *actually* doing (e.g., Intercept > Scanning > Idle).
   - **Custom States**: Set your own status message (e.g., "Bug Bounty Hunting").
@@ -52,13 +56,16 @@
 Navigate to the **Burpcord** tab to customize your experience:
 
 ### General
+
 - **Discord App ID**: Your unique Discord Application ID (Defaults to the official Burpcord ID).
 - **Update Interval**: How often the status refreshes (Default: 30s).
 - **Custom State Text**: Your personal tagline.
 - **Reload RPC**: Use this button if your status gets stuck or Discord restarts.
 
 ### Feature Toggles
+
 Enable or disable specific tracking modules:
+
 - [x] Show Intercept
 - [x] Show Scan Status
 - [x] Show Proxy History
@@ -71,6 +78,7 @@ Enable or disable specific tracking modules:
 ## 🏗️ Building from Source
 
 **Prerequisites**:
+
 - JDK 21+
 - Gradle 8.0+
 
