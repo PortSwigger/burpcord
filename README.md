@@ -2,7 +2,7 @@
 
 [![GitHub Package](https://img.shields.io/badge/GitHub-Packages-blue)](https://github.com/jondmarien/Burpcord/packages)
 [![Version](https://img.shields.io/badge/v2.4.1-blue.svg)](https://github.com/jondmarien/Burpcord/releases/tag/v2.4.1)
-[![Changelog](https://img.shields.io/badge/Changelog-View-blue)](CHANGELOG.md)
+[![Changelog](https://img.shields.io/badge/Changelog-View-purple)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Burpcord v2.4.1** is a Burp Suite extension that integrates Discord Rich Presence, displaying your real-time security testing activity on your Discord profile in real-time, built with a robust, modular architecture and resilient IPC connection handling. Whether you're intercepting traffic, running scans, fuzzing with Intruder, or testing in Repeater, Burpcord keeps your Discord status updated automatically. Features include customizable status toggles, configurable update intervals, custom state text, site map and scope tracking, Collaborator integration, and a built-in settings panel with live logging. Built with the Montoya API and Java 21.
