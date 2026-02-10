@@ -17,7 +17,6 @@ package tech.chron0.burpcord.config;
  * </ul>
  * 
  * @author Jon Marien
- * @version 2.4.0
  */
 public class BurpcordConfig {
 

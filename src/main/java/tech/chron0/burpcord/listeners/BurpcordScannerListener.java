@@ -19,7 +19,6 @@ import burp.api.montoya.MontoyaApi;
  * </p>
  * 
  * @author Jon Marien
- * @version 2.4.0
  */
 public class BurpcordScannerListener implements AuditIssueHandler, ActivityProvider, BurpComponent {
 

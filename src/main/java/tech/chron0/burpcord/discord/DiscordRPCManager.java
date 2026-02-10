@@ -41,7 +41,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * </ul>
  * 
  * @author Jon Marien
- * @version 2.4.0
  */
 public class DiscordRPCManager {
 
