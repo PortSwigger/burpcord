@@ -4,6 +4,7 @@ import tech.chron0.burpcord.config.BurpcordConfig;
 import tech.chron0.burpcord.discord.ActivityProvider;
 
 import burp.api.montoya.MontoyaApi;
+
 import com.jagrosh.discordipc.entities.RichPresence;
 
 /**
@@ -17,11 +18,9 @@ import com.jagrosh.discordipc.entities.RichPresence;
  */
 public class BurpcordScopeProvider implements ActivityProvider {
 
-    private final MontoyaApi api;
     private final BurpcordConfig config;
 
     public BurpcordScopeProvider(MontoyaApi api, BurpcordConfig config) {
-        this.api = api;
         this.config = config;
     }
 

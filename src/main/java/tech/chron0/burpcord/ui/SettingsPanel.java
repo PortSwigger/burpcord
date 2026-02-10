@@ -15,7 +15,6 @@ public class SettingsPanel extends JPanel {
     private final MontoyaApi api;
     private final BurpcordConfig config;
     private final DiscordRPCManager rpcManager;
-    private final LogPanel logPanel;
 
     // UI Components
     private final JTextField appIdField;
@@ -35,7 +34,6 @@ public class SettingsPanel extends JPanel {
         this.api = api;
         this.config = config;
         this.rpcManager = rpcManager;
-        this.logPanel = logPanel;
 
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
