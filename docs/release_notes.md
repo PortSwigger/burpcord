@@ -1,5 +1,13 @@
 # Burpcord Release Notes
 
+## [v2.4.1] - 2026-02-10
+
+### 🧹 Code Cleanup
+
+- **Removed `@version` Javadoc Tags**: Stripped hardcoded `@version` annotations from all 13 Java source files. Version is now single-sourced from `BurpcordConstants.VERSION` (runtime) and `build.gradle` (build-time). The `@version` Javadoc tag is a legacy convention that doesn't auto-update and added unnecessary maintenance burden on every release.
+
+---
+
 ## [v2.4.0] - 2026-02-10
 
 ### 🐛 Bug Fixes

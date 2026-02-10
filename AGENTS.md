@@ -14,7 +14,7 @@ This file provides guidance to AI agents and WARP (warp.dev) when working with c
 
 Burpcord is a Burp Suite extension that integrates Discord Rich Presence functionality. It displays real-time Burp Suite activity on Discord profiles, including security testing status, scan results, tool usage, and advanced metrics via the Montoya API. The extension is built using Java 21 and the Burp Suite Montoya API.
 
-**Current Version:** 2.4.0
+**Current Version:** 2.4.1
 
 ## Build System
 

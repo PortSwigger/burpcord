@@ -1,11 +1,11 @@
 # Burpcord - Discord Rich Presence for Burp Suite
 
 [![GitHub Package](https://img.shields.io/badge/GitHub-Packages-blue)](https://github.com/jondmarien/Burpcord/packages)
-[![Version](https://img.shields.io/badge/v2.4.0-blue.svg)](https://github.com/jondmarien/Burpcord/releases/tag/v2.4.0)
+[![Version](https://img.shields.io/badge/v2.4.1-blue.svg)](https://github.com/jondmarien/Burpcord/releases/tag/v2.4.1)
 [![Changelog](https://img.shields.io/badge/Changelog-View-blue)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Burpcord v2.4.0** is a complete rewrite of the original Burp Suite extension that integrates with Discord Rich Presence. It displays your active security testing workflow on your Discord profile in real-time, built with a robust, modular architecture and resilient IPC connection handling.
+**Burpcord v2.4.1** is a complete rewrite of the original Burp Suite extension that integrates with Discord Rich Presence. It displays your active security testing workflow on your Discord profile in real-time, built with a robust, modular architecture and resilient IPC connection handling.
 
 ## 🚀 Features
 
@@ -44,7 +44,7 @@
 
 ## 🛠️ Installation
 
-1. **Download**: Get the latest `Burpcord-2.4.0.jar` from the [Releases](https://github.com/jondmarien/burpcord/releases) page.
+1. **Download**: Get the latest `Burpcord-2.4.1.jar` from the [Releases](https://github.com/jondmarien/burpcord/releases) page.
 2. **Load in Burp Suite**:
    - Go to **Extensions** → **Installed**.
    - Click **Add**.
@@ -83,7 +83,7 @@ Enable or disable specific tracking modules:
 - JDK 21+
 - Gradle 8.0+
 
-Burpcord v2.4.0 uses the **ShadowJar** plugin to bundle dependencies and prevent runtime conflicts with Burp Suite.
+Burpcord v2.4.1 uses the **ShadowJar** plugin to bundle dependencies and prevent runtime conflicts with Burp Suite.
 
 ```bash
 git clone https://github.com/jondmarien/burpcord.git
@@ -94,7 +94,7 @@ cd burpcord
 ```
 
 The compiled artifact will be located at:
-`build/libs/Burpcord-2.4.0.jar`
+`build/libs/Burpcord-2.4.1.jar`
 
 ## 🔧 Troubleshooting
 

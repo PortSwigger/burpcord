@@ -1,5 +1,13 @@
 # Burpcord Changelog
 
+## [v2.4.1] - 2026-02-10
+
+### 🧹 Code Cleanup
+
+- **Removed Hardcoded Version Tags**: Version information is now managed in a single place, eliminating the need to manually update 15+ files on every release.
+
+---
+
 ## [v2.4.0] - 2026-02-10
 
 ### 🐛 Bug Fixes

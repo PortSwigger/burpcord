@@ -93,6 +93,9 @@ If you want custom branding for your presence:
 
 ## Version History
 
+### [v2.4.1] - 2026-02-10
+- **Code Cleanup**: Removed hardcoded version tags from source files — version is now single-sourced
+
 ### [v2.4.0] - 2026-02-10
 - **RPC Persists After Close**: Fixed critical issue where Discord presence lingered after Burp Suite closed
 - **JVM Shutdown Hook**: Safety net ensures presence is always cleared, even during abnormal exits
