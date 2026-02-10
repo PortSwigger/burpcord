@@ -22,6 +22,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * <h1>Discord RPC Manager</h1>
@@ -40,7 +41,7 @@ import java.util.concurrent.TimeoutException;
  * </ul>
  * 
  * @author Jon Marien
- * @version 2.3.0
+ * @version 2.4.0
  */
 public class DiscordRPCManager {
 
@@ -50,7 +51,7 @@ public class DiscordRPCManager {
     // IPC Client
     private IPCClient client;
     private ScheduledExecutorService scheduler;
-    private boolean isConnected = false;
+    private final AtomicBoolean shutdownCalled = new AtomicBoolean(false);
     private final OffsetDateTime startTime;
 
     public DiscordRPCManager(BurpcordConfig config) {
@@ -107,7 +108,8 @@ public class DiscordRPCManager {
             } catch (Exception e) {
                 BurpcordSettingsTab.log("Burpcord: Failed to connect to Discord IPC after "
                         + MAX_CONNECT_RETRIES + " attempts: " + e.getMessage());
-                BurpcordSettingsTab.log("Hint: Ensure Discord is fully loaded and you are logged in, then click 'Reload Discord RPC'.");
+                BurpcordSettingsTab.log(
+                        "Hint: Ensure Discord is fully loaded and you are logged in, then click 'Reload Discord RPC'.");
                 System.err.println("Burpcord: Failed to connect to Discord IPC.");
                 e.printStackTrace();
             }
@@ -152,7 +154,8 @@ public class DiscordRPCManager {
                     long delay = Math.min(INITIAL_RETRY_DELAY_MS * (1L << (attempt - 1)), MAX_RETRY_DELAY_MS);
                     String reason;
                     if (isTimeout) {
-                        reason = "Connection timed out (" + (CONNECT_TIMEOUT_MS / 1000) + "s) — Discord IPC unresponsive";
+                        reason = "Connection timed out (" + (CONNECT_TIMEOUT_MS / 1000)
+                                + "s) — Discord IPC unresponsive";
                     } else if (isNullDataNpe) {
                         reason = "Discord not fully ready (user data unavailable)";
                     } else {
@@ -186,7 +189,8 @@ public class DiscordRPCManager {
         } catch (java.util.concurrent.ExecutionException e) {
             // Unwrap the real exception from the async task
             Throwable cause = e.getCause();
-            if (cause instanceof Exception) throw (Exception) cause;
+            if (cause instanceof Exception)
+                throw (Exception) cause;
             throw new RuntimeException(cause);
         } catch (TimeoutException e) {
             future.cancel(true);
@@ -199,7 +203,8 @@ public class DiscordRPCManager {
      * DiscordIPC library's {@code Pipe.openPipe()} handshake parsing.
      */
     private static boolean isHandshakeNullDataError(Exception e) {
-        if (!(e instanceof NullPointerException)) return false;
+        if (!(e instanceof NullPointerException))
+            return false;
         String msg = e.getMessage();
         return msg != null && msg.contains("\"data\"") && msg.contains("null");
     }
@@ -210,7 +215,8 @@ public class DiscordRPCManager {
      */
     private static boolean isAppIdNotFoundError(Exception e) {
         String msg = e.getMessage();
-        if (msg == null) return false;
+        if (msg == null)
+            return false;
         // The library surfaces this as an error when Discord returns 404 for the app
         return msg.contains("404") || msg.contains("not found") || msg.contains("Not Found");
     }
@@ -222,7 +228,6 @@ public class DiscordRPCManager {
         return new IPCListener() {
             @Override
             public void onReady(IPCClient client) {
-                isConnected = true;
                 BurpcordSettingsTab.log("Connected to Discord IPC.");
                 BurpcordSettingsTab.updateConnectionStatusStatic(true);
                 updatePresence("Ready");
@@ -230,7 +235,6 @@ public class DiscordRPCManager {
 
             @Override
             public void onDisconnect(IPCClient client, Throwable t) {
-                isConnected = false;
                 BurpcordSettingsTab.log("Disconnected from Discord IPC.");
                 BurpcordSettingsTab.updateConnectionStatusStatic(false);
             }
@@ -262,7 +266,6 @@ public class DiscordRPCManager {
 
             @Override
             public void onClose(IPCClient client, JsonObject json) {
-                isConnected = false;
                 BurpcordSettingsTab.log("Discord IPC Closed.");
                 BurpcordSettingsTab.updateConnectionStatusStatic(false);
             }
@@ -273,13 +276,20 @@ public class DiscordRPCManager {
      * Shuts down the scheduler and closes the IPC connection.
      */
     public void shutdown() {
+        if (!shutdownCalled.compareAndSet(false, true)) {
+            return; // Already shut down
+        }
         if (scheduler != null) {
             scheduler.shutdownNow();
         }
         if (client != null && client.getStatus() == PipeStatus.CONNECTED) {
+            try {
+                client.sendRichPresence(null); // Clear activity from Discord
+            } catch (Exception e) {
+                // Best-effort clear; log but don't prevent close
+            }
             client.close();
         }
-        isConnected = false;
     }
 
     /**
@@ -355,6 +365,7 @@ public class DiscordRPCManager {
      */
     public void reloadRPC() {
         shutdown();
+        shutdownCalled.set(false); // Reset so next initialize() cycle can shut down
         initialize();
     }
 }

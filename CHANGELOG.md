@@ -1,18 +1,35 @@
-# Burpcord Release Notes
+# Burpcord Changelog
+
+## [v2.4.0] - 2026-02-10
+
+### 🐛 Bug Fixes
+
+- **RPC Persists After Close**: Fixed a critical issue where Discord Rich Presence continued displaying on the user's profile after Burp Suite was closed. The extension now explicitly clears the Discord activity before closing the IPC connection.
+
+### 🔧 Improvements
+
+- **JVM Shutdown Hook**: Added a JVM shutdown hook as a safety net to ensure the Discord presence is always cleared, even during abnormal application exits.
+- **Idempotent Shutdown**: Shutdown logic is now thread-safe and idempotent — safe to call from both the extension unload handler and the JVM shutdown hook without double-execution.
+
+### 🧹 Code Cleanup
+
+- **Removed Dead Code**: Removed unused `isConnected` field from `DiscordRPCManager` that was being set but never read.
+
+---
 
 ## [v2.3.0] - 2026-02-09
 
 ### 🐛 Bug Fixes
 
-- **Default App ID**: Fixed incorrect default Discord Application ID (`1328087961230639207` → `1457789708753965206`). The old ID returned HTTP 404, causing silent handshake timeouts.
-- **StatusDisplayType NPE**: Fixed `Cannot invoke "StatusDisplayType.ordinal()" because "this.statusDisplayType" is null` crash when sending presence updates. The new `statusDisplayType` field in DiscordIPC 0.11.2 was not being initialized.
-- **Presence Update Safety**: Wrapped `sendRichPresence` in try/catch to prevent unhandled exceptions from crashing the scheduler.
+- **Default App ID**: Fixed an incorrect default Discord Application ID that caused the extension to silently fail on first launch.
+- **Presence Crash**: Fixed a crash that occurred when sending presence updates after upgrading to the latest Discord IPC library.
+- **Presence Update Safety**: Presence updates no longer crash the status scheduler if an unexpected error occurs.
 
 ### 🔧 Improvements
 
-- **App ID Validation**: Invalid or unregistered App IDs now fail fast with a clear error message and hint instead of silently hanging.
-- **Connect Timeout**: Each IPC connect attempt now has a 10-second timeout to prevent indefinite blocking when Discord's pipe is open but unresponsive.
-- **Retry Logic**: Increased retries from 3 to 5 with capped exponential backoff (3s → 30s max) for more resilience on slower machines.
+- **App ID Validation**: Invalid or unregistered App IDs now show a clear error message instead of silently hanging.
+- **Connect Timeout**: Connection attempts now time out after 10 seconds instead of hanging indefinitely if Discord is unresponsive.
+- **Retry Logic**: Increased connection retries from 3 to 5 with smarter backoff delays for more resilience on slower machines.
 
 ---
 
@@ -20,12 +37,12 @@
 
 ### 🐛 Bug Fixes
 
-- **Shadow JAR Packaging**: Fixed `ClassNotFoundException: com.jagrosh.discordipc.IPCListener` caused by the plain `jar` task overwriting the fat shadow JAR during publish. Ensured `shadowJar` always runs last.
-- **UTF-8 Encoding**: Fixed unmappable character warning on Windows by setting `compileJava` and `javadoc` encoding to UTF-8.
+- **Extension Loading**: Fixed an issue where the extension would fail to load with a missing class error after installation.
+- **Character Encoding**: Fixed a warning on Windows caused by special characters in the source code.
 
 ### 🔧 Improvements
 
-- **Build System**: Made GPG signing conditional (only when keys are available), allowing GitHub Packages publish without GPG configuration.
+- **Build System**: Simplified the publishing process — GPG signing is now optional for contributors.
 
 ---
 
@@ -33,35 +50,28 @@
 
 ### 🐛 Bug Fixes
 
-- **IPC Handshake NPE**: Fixed `Cannot invoke "JsonObject.getAsJsonObject(String)" because "data" is null` crash on connect when Discord is not fully ready. Added retry-with-backoff (3 attempts, exponential delay) on a background thread.
-- **IPC Shutdown**: Upgraded DiscordIPC library which re-adds null support for `sendRichPresence` calls, required for clean IPC shutdown due to recent Discord breakage.
+- **Connection Crash**: Fixed a crash when connecting to Discord before it was fully loaded. The extension now retries automatically with increasing delays.
+- **Clean Disconnect**: Fixed an issue where Discord's recent update broke the ability to cleanly disconnect the presence.
 
 ### 🔧 Improvements
 
-- **Dependency Upgrade**: Upgraded DiscordIPC from `0.10.2` → `0.11.2` (new Maven group ID `io.github.cdagaming`), picking up updated Gson (2.13.1), SLF4J (2.0.17), new RPC fields (`status_display_type`, `name`, URL support for images/state/details), and null-safe presence cleanup.
-- **API Migration**: Migrated all `setLargeImage`/`setSmallImage` calls to new `setLargeImageWithTooltip`/`setSmallImageWithTooltip` API to match DiscordIPC 0.11.x breaking changes.
-- **Connection Resilience**: IPC connection now runs on a dedicated daemon thread (`Burpcord-IPC-Connect`) with exponential backoff retries, preventing extension load failures when Discord is slow to initialize.
+- **Updated Discord Library**: Upgraded to the latest Discord IPC library with better compatibility and new features.
+- **Connection Resilience**: The extension now connects on a background thread with automatic retries, so it no longer blocks Burp Suite from loading if Discord is slow to start.
 
 ---
 
 ## [v2.1.0] - 2026-01-28
 
-### 🚀 Major Refactoring & Improvements
+### 🔧 Improvements
 
-- **Component Priority System**: Introduced a robust priority system (`getPriority()`) for `ActivityProvider`s from level 10 to 80, ensuring deterministic and logical component registration order.
-- **OOP Registration Logic**: Refactored all listeners (`Proxy`, `Scanner`, `Intruder`, `Repeater`, `WebSocket`) to implement a common `BurpComponent` interface, allowing self-contained registration via `register(MontoyaApi)`.
-- **Streamlined Initialization**: Rewrote `BurpcordExtension` to use a clean list-based initialization pattern, significantly reducing boilerplate code and improving maintainability.
+- **Smarter Status Priority**: Status updates now follow a clear priority order — the most relevant activity is always shown first.
+- **Cleaner Architecture**: Refactored how activity tracking components are registered, making the extension more reliable and easier to extend.
 
 ### 🐛 Bug Fixes
 
-- **Runtime Crash**: Resolved `ClassNotFoundException` wrapper issues by implementing correct ShadowJar configuration with dependency relocation.
-- **RPC Stability**: Fixed an issue where invalid `ActivityType` defaults caused immediate RPC disconnections.
-- **UI Sync**: Fixed a race condition where the UI connection status indicator would remain "Disconnected" despite a successful RPC connection.
-
-### 🛠 Technical Changes
-
-- **Project Structure**: Organized listener classes into logical `providers` and `handlers` subpackages for better codebase navigation.
-- **Initialization**: Decoupled component instantiation from registration logic using the new priority sorting mechanism.
+- **Extension Loading Crash**: Fixed an issue that prevented the extension from loading in some environments.
+- **RPC Stability**: Fixed a bug where the Discord connection would immediately disconnect after connecting.
+- **Status Indicator**: Fixed the UI status indicator sometimes showing "Disconnected" even when connected.
 
 ---
 
@@ -69,35 +79,28 @@
 
 ### ✨ New Features
 
-- **Modular UI Architecture**: Decomposed the monolithic `BurpcordSettingsTab` into distinct, maintainable panels:
-  - `SettingsPanel`: General configuration options.
-  - `LogPanel`: Dedicated scrolling log viewer.
-  - `AboutPanel`: Version and author information.
-  - `HelpPanel`: Support and documentation links.
-- **New Activity Providers**: Added support for tracking:
-  - **Site Map**: Tracks project site map size with caching performance optimizations.
-  - **Scope**: Monitors target scope configuration status.
-  - **Collaborator**: Tracks Burp Collaborator interactions.
-- **Provider Pattern**: Introduced the `ActivityProvider` architecture to decentralize status logic from the main RPC manager.
+- **Redesigned Settings UI**: The settings tab is now split into four clean panels — Settings, Log, About, and Help.
+- **Site Map Tracking**: Displays how many endpoints have been mapped in your project.
+- **Scope Tracking**: Shows the number of unique targets in scope.
+- **Collaborator Tracking**: Displays Out-of-Band (OOB) interaction hits (Pro only).
 
 ### 🔧 Improvements
 
-- **Package Migration**: Migrated root package from `com.burpcord` to `tech.chron0.burpcord` to adhere to standard Java naming conventions.
-- **Enhanced Logging**: Implemented a new ASCII art banner start-up log and improved console output formatting.
-- **Documentation**: Restored and standardized Javadocs across the entire codebase.
+- **Improved Logging**: New startup banner and cleaner console output formatting.
+- **Documentation**: Comprehensive Javadocs across the entire codebase.
 
 ---
 
 ## [v1.5.2] - 2026-01-27
 
-### 🚀 New Features
+### ✨ New Features
 
-- **Global RPC Switch**: Added a master toggle to enable/disable Discord RPC entirely without unloading the extension.
-- **Rich Presence Toggles**: Added granular control to show/hide specific tools in Discord status.
+- **Global RPC Switch**: Added a master toggle to enable/disable Discord Rich Presence without unloading the extension.
+- **Feature Toggles**: Choose exactly which tools appear in your Discord status.
 
 ### 🐛 Bug Fixes
 
-- **Connection Lifecycle**: Fixed issues where the Discord IPC connection would not close cleanly upon extension unload.
+- **Clean Disconnect**: Fixed the Discord connection not closing properly when unloading the extension.
 
 ---
 
@@ -105,45 +108,54 @@
 
 ### ⚡ Performance
 
-- **Site Map Caching**: Added caching mechanisms for large project performance, preventing UI freezes when querying site map size.
-- **Documentation**: Updated project documentation to include PortSwigger-provided BApp info.
+- **Site Map Caching**: Large projects no longer cause UI freezes when querying site map size.
+
+---
 
 ## [v1.3.2] - 2026-01-27
 
 ### 🎨 UI & Logging
 
-- **Enhanced Logs**: Added more context to the custom logging section of the extension tab.
-- **Styling**: Improved overall UI styling and log formatting.
+- **Improved Logs**: Added more context and detail to the built-in log viewer.
+- **UI Polish**: Improved overall styling and log formatting.
+
+---
 
 ## [v1.3.1] - 2026-01-27
 
 ### 🐛 Bug Fixes
 
-- **RPC Cleanup**: Fixed issues with sending empty presence updates before disconnection.
+- **Presence Cleanup**: Fixed an issue where the Discord status wasn't cleared properly on disconnect.
+
+---
 
 ## [v1.3.0] - 2026-01-27
 
 ### ✨ New Features
 
-- **Expanded Tracking**: Added tracking for Burp Version, Edition, Scope stats, Proxy history, and Site Map size.
-- **WebSocket Support**: Added support for monitoring WebSocket traffic activity.
-- **Collaborator**: Added initial stats tracking for Collaborator.
+- **Expanded Tracking**: Now shows Burp Version, Edition, Scope stats, Proxy history, and Site Map size on your Discord profile.
+- **WebSocket Support**: Monitor WebSocket traffic activity in your Discord status.
+- **Collaborator**: Initial support for tracking Collaborator interactions.
+
+---
 
 ## [v1.2.0] - 2026-01-27
 
-### 🚀 Features
+### ✨ New Features
 
-- **RPC Toggle**: Added the ability to toggle RPC without unloading the extension.
-- **Intruder Tracking**: Added support for tracking Intruder attacks (Fuzzing/Brute-forcing).
-- **Custom State**: Allowed users to set custom text for their status state.
+- **RPC Toggle**: Enable or disable Discord RPC without unloading the extension.
+- **Intruder Tracking**: See your Intruder attacks (fuzzing/brute-forcing) in your Discord status.
+- **Custom State**: Set your own status message (e.g., "Bug Bounty Hunting").
+
+---
 
 ## [v1.1.0] - 2026-01-27
 
-### 🛠 Technical
+### 🔧 Improvements
 
-- **GUI Handling**: Implemented usage of Burp's GUI Parent Frame for better dialog modal handling.
-- **Threading**: Improved background thread exception handling.
-- **License**: Added project LICENSE file.
+- **Better Popups**: Dialog windows now appear on the correct monitor in multi-display setups.
+- **Stability**: Improved background thread error handling to prevent silent crashes.
+- **License**: Added MIT license.
 
 ---
 
@@ -151,9 +163,13 @@
 
 ### 🎉 Initial Release
 
-- **Core Functionality**:
-  - Integration of Discord Rich Presence into Burp Suite.
-  - Support for tracking Proxy, Scanner, Repeater, and Intruder activity.
-- **Basic UI**: Integrated settings tab within Burp Suite.
-- **Configuration**: Persistence for App ID and basic settings.
-- **Foundation**: Basic implementation of the Discord IPC connection.
+- **Discord Rich Presence** for Burp Suite — show your security testing activity on your Discord profile.
+- **Activity Tracking**: Proxy, Scanner, Repeater, and Intruder activity displayed in real-time.
+- **Settings Tab**: Configure your App ID, update interval, and preferences directly in Burp Suite.
+- **Persistent Settings**: Your configuration is saved between sessions.
+
+---
+
+## 📋 Detailed Release Notes
+
+Looking for more technical detail? Check out the full [Release Notes](docs/release_notes.md) for in-depth implementation details, internal changes, and developer-oriented context for each release.

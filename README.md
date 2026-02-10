@@ -1,11 +1,11 @@
 # Burpcord - Discord Rich Presence for Burp Suite
 
 [![GitHub Package](https://img.shields.io/badge/GitHub-Packages-blue)](https://github.com/jondmarien/Burpcord/packages)
-[![Version](https://img.shields.io/badge/v2.3.0-blue.svg)](https://github.com/jondmarien/Burpcord/releases/tag/v2.3.0)
+[![Version](https://img.shields.io/badge/v2.4.0-blue.svg)](https://github.com/jondmarien/Burpcord/releases/tag/v2.4.0)
 [![Changelog](https://img.shields.io/badge/Changelog-View-blue)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Burpcord v2.3.0** is a complete rewrite of the original Burp Suite extension that integrates with Discord Rich Presence. It displays your active security testing workflow on your Discord profile in real-time, built with a robust, modular architecture and resilient IPC connection handling.
+**Burpcord v2.4.0** is a complete rewrite of the original Burp Suite extension that integrates with Discord Rich Presence. It displays your active security testing workflow on your Discord profile in real-time, built with a robust, modular architecture and resilient IPC connection handling.
 
 ## 🚀 Features
 
@@ -37,13 +37,14 @@
   - **App ID Validation**: Invalid or unregistered App IDs fail fast with a clear error message.
   - **Auto-Reconnect**: Built-in "Reload RPC" button to fix connection issues instantly.
   - **Status Indicator**: Visual feedback in the UI showing connection state (Connected/Disconnected).
+  - **Clean Shutdown**: Presence is explicitly cleared on exit — no ghost activity on your Discord profile after closing Burp Suite.
 - **Embedded Logging**:
   - **Dual Logging**: Logs to both the specialized **Burpcord Log Panel** and Burp's native **Output** tab.
   - **Verbose Debugging**: Detailed connection events and error traces.
 
 ## 🛠️ Installation
 
-1. **Download**: Get the latest `Burpcord-2.3.0.jar` from the [Releases](https://github.com/jondmarien/burpcord/releases) page.
+1. **Download**: Get the latest `Burpcord-2.4.0.jar` from the [Releases](https://github.com/jondmarien/burpcord/releases) page.
 2. **Load in Burp Suite**:
    - Go to **Extensions** → **Installed**.
    - Click **Add**.
@@ -82,7 +83,7 @@ Enable or disable specific tracking modules:
 - JDK 21+
 - Gradle 8.0+
 
-Burpcord v2.3.0 uses the **ShadowJar** plugin to bundle dependencies and prevent runtime conflicts with Burp Suite.
+Burpcord v2.4.0 uses the **ShadowJar** plugin to bundle dependencies and prevent runtime conflicts with Burp Suite.
 
 ```bash
 git clone https://github.com/jondmarien/burpcord.git
@@ -93,7 +94,7 @@ cd burpcord
 ```
 
 The compiled artifact will be located at:
-`build/libs/Burpcord-2.3.0.jar`
+`build/libs/Burpcord-2.4.0.jar`
 
 ## 🔧 Troubleshooting
 

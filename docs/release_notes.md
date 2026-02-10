@@ -1,5 +1,22 @@
 # Burpcord Release Notes
 
+## [v2.4.0] - 2026-02-10
+
+### 🐛 Bug Fixes
+
+- **RPC Persists After Close (BApp Store Blocker)**: Discord Rich Presence continued displaying after Burp Suite exited because `client.close()` only closes the IPC pipe — it does not send a clear-activity command. Fixed by calling `client.sendRichPresence(null)` before `client.close()` in `DiscordRPCManager.shutdown()`, which sends `SET_ACTIVITY` with a `null` payload to Discord.
+
+### 🔧 Improvements
+
+- **JVM Shutdown Hook**: Registered `Runtime.getRuntime().addShutdownHook()` in `BurpcordExtension.initialize()` as a safety net for abnormal JVM exits where `extensionUnloaded()` might not fire. The hook is removed on clean unload via `removeShutdownHook()`.
+- **Idempotent Shutdown**: `DiscordRPCManager.shutdown()` is guarded by `AtomicBoolean.compareAndSet()`, making it safe to invoke from both `extensionUnloaded()` and the JVM shutdown hook without double-execution. `reloadRPC()` resets the flag for subsequent init cycles.
+
+### 🧹 Code Cleanup
+
+- **Removed `isConnected` Field**: The `volatile boolean isConnected` field in `DiscordRPCManager` was assigned in `onReady`, `onDisconnect`, `onClose`, and `shutdown` but never read anywhere. Removed as dead code. Connection status is already tracked via `client.getStatus() == PipeStatus.CONNECTED` checks and the UI status indicator updated through `BurpcordSettingsTab.updateConnectionStatusStatic()`.
+
+---
+
 ## [v2.3.0] - 2026-02-09
 
 ### 🐛 Bug Fixes

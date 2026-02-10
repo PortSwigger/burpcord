@@ -93,6 +93,12 @@ If you want custom branding for your presence:
 
 ## Version History
 
+### [v2.4.0] - 2026-02-10
+- **RPC Persists After Close**: Fixed critical issue where Discord presence lingered after Burp Suite closed
+- **JVM Shutdown Hook**: Safety net ensures presence is always cleared, even during abnormal exits
+- **Idempotent Shutdown**: Thread-safe shutdown logic prevents double-execution
+- **Code Cleanup**: Removed unused `isConnected` field
+
 ### [v2.3.0] - 2026-02-09
 - **Default App ID Fix**: Corrected incorrect default Discord Application ID that returned HTTP 404
 - **StatusDisplayType NPE**: Fixed crash from uninitialized `statusDisplayType` field in DiscordIPC 0.11.2

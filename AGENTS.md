@@ -14,7 +14,7 @@ This file provides guidance to AI agents and WARP (warp.dev) when working with c
 
 Burpcord is a Burp Suite extension that integrates Discord Rich Presence functionality. It displays real-time Burp Suite activity on Discord profiles, including security testing status, scan results, tool usage, and advanced metrics via the Montoya API. The extension is built using Java 21 and the Burp Suite Montoya API.
 
-**Current Version:** 1.5.2
+**Current Version:** 2.4.0
 
 ## Build System
 
@@ -54,7 +54,7 @@ make clean
 - Initializes the Discord RPC manager
 - Registers handlers for Proxy, Scanner, Repeater, Intruder, and WebSockets
 - Creates the Settings UI tab
-- Implements proper cleanup via `ExtensionUnloadingHandler`
+- Implements proper cleanup via `ExtensionUnloadingHandler` and a JVM shutdown hook
 
 ### Core Components
 
@@ -62,6 +62,7 @@ make clean
 - Discord IPC connection lifecycle using the DiscordIPC library
 - Periodic status updates via `ScheduledExecutorService`
 - Atomic counters for requests, responses, and vulnerabilities
+- Idempotent shutdown with `AtomicBoolean` guard and explicit presence clearing
 - Status rotation when multiple activities are active
 - Priority-based status determination
 - Montoya API integrations for proxy history, site map, scope, and Collaborator
@@ -92,7 +93,8 @@ make clean
 - Discord RPC updates run on a single-threaded `ScheduledExecutorService`
 - Event handlers execute on Burp's threads (must be fast to avoid blocking)
 - All shared state uses `AtomicInteger` and `AtomicBoolean` for thread safety
-- Scheduler is properly shutdown in `extensionUnloaded()` to prevent resource leaks
+- Scheduler is properly terminated in `extensionUnloaded()` to prevent resource leaks
+- JVM shutdown hook as safety net; `AtomicBoolean` guard prevents double-shutdown
 - UI logging uses `SwingUtilities.invokeLater()` for thread-safe updates
 
 ### Status Priority Logic
@@ -116,7 +118,7 @@ When multiple statuses are active, they rotate on each update interval.
 - `montoya-api:2025.12` - Burp Suite extension API (not bundled in JAR)
 
 **Implementation (bundled):**
-- `DiscordIPC:0.10.2` - Discord Rich Presence client library
+- `DiscordIPC:0.11.2` - Discord Rich Presence client library
 - `gson:2.10.1` - JSON serialization for Discord IPC
 
 The `jar` task creates a fat JAR with all runtime dependencies using `DuplicatesStrategy.EXCLUDE`.

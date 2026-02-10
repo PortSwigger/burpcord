@@ -38,12 +38,13 @@ import javax.swing.SwingUtilities;
  * </ul>
  * 
  * @author Jon Marien
- * @version 2.3.0
+ * @version 2.4.0
  * @see <a href="https://discord.gg/wXWJp9M9Cq">Burp Suite Discord</a>
  */
 public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandler {
 
         private DiscordRPCManager rpcManager;
+        private Thread shutdownHook;
 
         @Override
         public void initialize(MontoyaApi api) {
@@ -67,6 +68,14 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
                 // Register Unload
                 api.extension().registerUnloadingHandler(this);
 
+                // JVM shutdown hook as safety net for abnormal exits
+                shutdownHook = new Thread(() -> {
+                        if (rpcManager != null) {
+                                rpcManager.shutdown();
+                        }
+                }, "Burpcord-Shutdown-Hook");
+                Runtime.getRuntime().addShutdownHook(shutdownHook);
+
                 logBanner();
                 BurpcordSettingsTab.log("Burpcord v" + BurpcordConstants.VERSION + " loaded.");
 
@@ -81,6 +90,14 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
         public void extensionUnloaded() {
                 if (rpcManager != null) {
                         rpcManager.shutdown();
+                }
+                // Remove the shutdown hook since we've already cleaned up
+                try {
+                        if (shutdownHook != null) {
+                                Runtime.getRuntime().removeShutdownHook(shutdownHook);
+                        }
+                } catch (IllegalStateException ignored) {
+                        // JVM is already shutting down — hook will run but shutdown() is idempotent
                 }
                 BurpcordSettingsTab.log("Burpcord unloaded.");
         }
