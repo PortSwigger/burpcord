@@ -1,5 +1,14 @@
 # Burpcord Changelog
 
+## [v2.5.0] - 2026-02-10
+
+### ✨ Enhancements
+
+- **Real Collaborator Tracking**: The Collaborator feature now uses the real Montoya Collaborator API to track DNS, HTTP, and SMTP interactions with live counts and type breakdowns. Gracefully disables on Community Edition.
+- **Real Scope Tracking**: The Scope feature now tracks actual scope modifications in real-time, showing how many times the target scope has been changed during your session.
+
+---
+
 ## [v2.4.1] - 2026-02-10
 
 ### 🧹 Code Cleanup

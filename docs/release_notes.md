@@ -1,5 +1,14 @@
 # Burpcord Release Notes
 
+## [v2.5.0] - 2026-02-10
+
+### ✨ Enhancements
+
+- **Real Collaborator API Integration**: Rewrote `BurpcordCollaboratorProvider` to use the Montoya `CollaboratorClient` API. Creates a client on registration, polls `getAllInteractions()` with 60s cache TTL, shows interaction count with DNS/HTTP/SMTP type breakdown. Throws are caught for Community Edition (Pro-only feature) — provider stays permanently inactive. Implements `BurpComponent` for proper API registration lifecycle.
+- **Real Scope API Integration**: Rewrote `BurpcordScopeProvider` to implement `ScopeChangeHandler`. Registers via `api.scope().registerScopeChangeHandler()` for event-driven scope tracking. Counts modifications with `AtomicInteger`. Note: Montoya Scope API has no list/count method — only `isInScope(url)` and change events.
+
+---
+
 ## [v2.4.1] - 2026-02-10
 
 ### 🧹 Code Cleanup

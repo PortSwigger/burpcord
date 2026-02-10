@@ -93,6 +93,10 @@ If you want custom branding for your presence:
 
 ## Version History
 
+### [v2.5.0] - 2026-02-10
+- **Real Collaborator Tracking**: Live interaction counts via Montoya Collaborator API (Pro only, graceful fallback)
+- **Real Scope Tracking**: Event-driven scope change tracking via ScopeChangeHandler
+
 ### [v2.4.1] - 2026-02-10
 - **Code Cleanup**: Removed hardcoded version tags from source files — version is now single-sourced
 
