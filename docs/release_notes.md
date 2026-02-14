@@ -1,5 +1,17 @@
 # Burpcord Release Notes
 
+## [v2.5.2] - 2026-02-13
+
+### 🔧 Improvements
+
+- **DiscordIPC 0.11.2 → 0.11.3**: Upgraded to the version that includes CDAGaming's upstream merge of our null-safety fixes ([commit `3e07425`](https://github.com/CDAGaming/DiscordIPC/commit/3e07425)). The two bugs we reported — null `data` in `Pipe.openPipe()` handshake and missing `StatusDisplayType` default in `RichPresence.Builder` — are now resolved in the library itself.
+- **Removed `connectWithTimeout()`**: The `CompletableFuture`-based timeout wrapper around `client.connect()` was a downstream workaround for the null handshake data bug causing indefinite blocking. With the upstream fix, `Pipe.openPipe()` now throws a descriptive `IOException` and tries the next pipe index, so the timeout wrapper is no longer needed. Removed along with the `CONNECT_TIMEOUT_MS` constant.
+- **Removed `isHandshakeNullDataError()`**: This method detected the specific `NullPointerException` from the library's `Pipe.openPipe()` when `data` was null. The upstream fix converts this to a proper `IOException`, so the NPE detection heuristic is obsolete.
+- **Removed `StatusDisplayType`/`ActivityType` workaround**: The explicit `builder.setActivityType(ActivityType.Playing)` and `builder.setStatusDisplayType(StatusDisplayType.Name)` calls were required to prevent an NPE in `RichPresence.toJson()` because the `Builder` class had no defaults. CDAGaming resolved this by adding defaults on the `Builder` class. Removed the workaround and the now-unused `ActivityType`/`StatusDisplayType` imports.
+- **Simplified Retry Logic**: Reduced `MAX_CONNECT_RETRIES` from 5 → 3 and `MAX_RETRY_DELAY_MS` from 30s → 15s. The aggressive retry count was primarily needed to handle the null-data race condition on slower machines. With the upstream fix, 3 retries with 3s–15s backoff is sufficient for the remaining "Discord not started yet" scenario.
+
+---
+
 ## [v2.5.1] - 2026-02-10
 
 ### 🐛 Bug Fixes

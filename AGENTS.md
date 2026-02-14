@@ -14,11 +14,12 @@ This file provides guidance to AI agents and WARP (warp.dev) when working with c
 
 Burpcord is a Burp Suite extension that integrates Discord Rich Presence functionality. It displays real-time Burp Suite activity on Discord profiles, including security testing status, scan results, tool usage, and advanced metrics via the Montoya API. The extension is built using Java 21 and the Burp Suite Montoya API.
 
-**Current Version:** 2.5.1
+**Current Version:** 2.5.2
 
 ## Build System
 
 This project uses **Gradle** with Java 21. Key build files:
+
 - `build.gradle` - Main build configuration
 - `settings.gradle` - Project settings
 - `Makefile` - Windows-specific convenience wrapper for Gradle commands
@@ -26,10 +27,13 @@ This project uses **Gradle** with Java 21. Key build files:
 ### Common Commands
 
 **Build the JAR:**
+
 ```powershell
 .\gradlew.bat jar
 ```
+
 Or via Makefile:
+
 ```powershell
 make build
 ```
@@ -37,10 +41,13 @@ make build
 The compiled JAR will be located at: `build/libs/Burpcord-X.X.jar`
 
 **Clean build artifacts:**
+
 ```powershell
 .\gradlew.bat clean
 ```
+
 Or via Makefile:
+
 ```powershell
 make clean
 ```
@@ -50,7 +57,9 @@ make clean
 ## Architecture
 
 ### Extension Entry Point
+
 `BurpcordExtension` (implements `BurpExtension`) is the main entry point:
+
 - Initializes the Discord RPC manager
 - Registers handlers for Proxy, Scanner, Repeater, Intruder, and WebSockets
 - Creates the Settings UI tab
@@ -59,6 +68,7 @@ make clean
 ### Core Components
 
 **DiscordRPCManager** - Central coordinator managing:
+
 - Discord IPC connection lifecycle using the DiscordIPC library
 - Periodic status updates via `ScheduledExecutorService`
 - Atomic counters for requests, responses, and vulnerabilities
@@ -69,12 +79,14 @@ make clean
 - WebSocket message tracking
 
 **BurpcordConfig** - Configuration persistence layer:
+
 - Uses Burp's `Preferences` API for storage
 - Manages Discord App ID, update interval, and feature toggles
 - Provides default values when preferences are unset
 - v1.3 features: site map, scope, collaborator, websockets toggles
 
 **Event Handlers:**
+
 - `BurpcordProxyHandler` - Tracks proxy requests/responses and intercept status
 - `BurpcordScannerListener` - Monitors active/passive scans and vulnerability counts
 - `BurpcordRepeaterListener` - Detects Repeater tool activity via `ToolSource`
@@ -82,6 +94,7 @@ make clean
 - `BurpcordWebSocketListener` - Monitors WebSocket messages via `WebSocketCreatedHandler`
 
 **BurpcordSettingsTab** - GUI configuration interface:
+
 - Reload RPC button for quick reconnection
 - App ID and interval configuration
 - Custom state text field
@@ -100,6 +113,7 @@ make clean
 ### Status Priority Logic
 
 Status updates follow this priority order (highest to lowest):
+
 1. **Intercepting** - Active when proxy traffic is being intercepted (clears after 5s inactivity)
 2. **Scanning** - Shows when scan activity occurred in last 60s OR vulnerabilities detected
 3. **Proxy** - Displays accurate request count from Montoya API
@@ -115,10 +129,12 @@ When multiple statuses are active, they rotate on each update interval.
 ## Dependencies
 
 **Compile-only:**
+
 - `montoya-api:2025.12` - Burp Suite extension API (not bundled in JAR)
 
 **Implementation (bundled):**
-- `DiscordIPC:0.11.2` - Discord Rich Presence client library
+
+- `DiscordIPC:0.11.3` - Discord Rich Presence client library
 - `gson:2.10.1` - JSON serialization for Discord IPC
 
 The `jar` task creates a fat JAR with all runtime dependencies using `DuplicatesStrategy.EXCLUDE`.
@@ -128,6 +144,7 @@ The `jar` task creates a fat JAR with all runtime dependencies using `Duplicates
 When modifying this extension, ensure compliance with BApp Store acceptance criteria (see `docs/BApp-Store-Acceptance-Criteria.md`):
 
 **Critical requirements:**
+
 - All slow operations must run in background threads (never block Swing EDT)
 - Use `Extension.registerUnloadingHandler()` to clean up resources (especially the scheduler)
 - Prefer Burp's `Http.issueHttpRequest()` over direct HTTP libraries
@@ -136,6 +153,7 @@ When modifying this extension, ensure compliance with BApp Store acceptance crit
 - Extension must handle large projects efficiently
 
 **Threading considerations:**
+
 - Wrap background threads in try/catch and log exceptions to extension error stream
 - Burp does not catch exceptions in background threads automatically
 - The scheduler must be properly terminated in `extensionUnloaded()`
@@ -143,16 +161,19 @@ When modifying this extension, ensure compliance with BApp Store acceptance crit
 ## Discord Integration
 
 The extension requires a Discord Application ID to function. Users can:
+
 - Use the default App ID (`1457789708753965206`)
 - Create their own via Discord Developer Portal for custom branding
 
 **Rich Presence assets:**
+
 - Large image key must be named `burp` in Discord Developer Portal
 - Start timestamp persists across status updates for accurate session time tracking
 
 ## Testing Notes
 
 There is no automated test suite. Manual testing requires:
+
 1. Loading the JAR in Burp Suite via Extensions → Installed → Add
 2. Verifying Discord is running and Game Activity is enabled
 3. Testing each feature (Intercept, Scanner, Proxy, Repeater, Intruder) individually
@@ -164,6 +185,7 @@ There is no automated test suite. Manual testing requires:
 ## Common Development Scenarios
 
 **Adding a new status type:**
+
 1. Add tracking variables to `DiscordRPCManager` (use `Atomic*` types)
 2. Create or modify a listener/handler to update those variables
 3. Update `updateStatusFromStats()` to include the new status in priority logic
@@ -177,6 +199,7 @@ Edit the conditional logic order in `DiscordRPCManager.updateStatusFromStats()`
 Users configure this via Settings tab. Default is 5 seconds (`DEFAULT_UPDATE_INTERVAL`).
 
 **Debugging Discord IPC issues:**
+
 1. Check the built-in log viewer in the Burpcord tab
 2. Check Burp's extension output/error streams
 3. The `IPCListener` logs connection events

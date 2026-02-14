@@ -1,5 +1,15 @@
 # Burpcord Changelog
 
+## [v2.5.2] - 2026-02-13
+
+### 🔧 Improvements
+
+- **Updated Discord Library**: Upgraded to DiscordIPC 0.11.3, which includes upstream fixes for two crash bugs we reported. Connection failures when Discord is slow to start and presence update crashes are now handled by the library itself.
+- **Cleaner Codebase**: Removed several workarounds that were previously needed to avoid crashes in the Discord library. The extension is now simpler and more maintainable.
+- **Simplified Connection Logic**: Reduced connection retries from 5 to 3 with shorter delays, since the main reason for aggressive retries has been resolved upstream.
+
+---
+
 ## [v2.5.1] - 2026-02-10
 
 ### 🐛 Bug Fixes

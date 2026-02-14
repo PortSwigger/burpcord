@@ -11,6 +11,7 @@ Whether you're intercepting traffic, running scans, fuzzing with Intruder, or te
 ## Key Features
 
 ### Activity Tracking
+
 - **Real-Time Activity Tracking** - Automatically detects and displays your current Burp Suite activity
 - **Intercept Status** - Shows when you're actively intercepting proxy traffic with request count
 - **Scanner Integration** - Displays vulnerability counts (High/Medium severity findings)
@@ -20,12 +21,14 @@ Whether you're intercepting traffic, running scans, fuzzing with Intruder, or te
 - **Session Timer** - Shows how long you've been using Burp Suite
 
 ### Advanced Monitoring
+
 - **Site Map Tracking** - Displays mapped endpoint count from Burp's site map
 - **Scope Tracking** - Shows unique in-scope target count
 - **Collaborator Integration** - Displays OOB interaction hits (Pro only)
 - **WebSocket Monitoring** - Tracks WebSocket message counts
 
 ### Customization & Configuration
+
 - **Customizable State Text** - Set your own status message (e.g., "Bug Bounty Hunting")
 - **RPC Toggle** - Quickly enable/disable Discord presence without unloading the extension
 - **Configurable Features** - Toggle individual status types on/off
@@ -33,6 +36,7 @@ Whether you're intercepting traffic, running scans, fuzzing with Intruder, or te
 - **Built-in Log Viewer** - View extension events and Discord connection status
 
 ### Architecture & Performance
+
 - **Modular Architecture** - Completely refactored codebase using the Provider pattern for stability and scalability
 - **Optimized Performance** - Smart caching (30s TTL) and priority-based updates ensure zero impact on Burp Suite
 - **Robust Connection** - Improved Discord RPC lifecycle management and connection stability
@@ -93,23 +97,34 @@ If you want custom branding for your presence:
 
 ## Version History
 
+### [v2.5.2] - 2026-02-13
+
+- **Updated Discord Library**: Upgraded to DiscordIPC 0.11.3 with upstream fixes for two crash bugs we reported
+- **Cleaner Codebase**: Removed downstream workarounds now that the library handles these cases natively
+- **Simplified Connection**: Reduced retries from 5 to 3 with shorter backoff delays
+
 ### [v2.5.1] - 2026-02-10
+
 - **Bug Fix**: Enabled features log now shows all 9 features instead of only 5
 
 ### [v2.5.0] - 2026-02-10
+
 - **Real Collaborator Tracking**: Live interaction counts via Montoya Collaborator API (Pro only, graceful fallback)
 - **Real Scope Tracking**: Event-driven scope change tracking via ScopeChangeHandler
 
 ### [v2.4.1] - 2026-02-10
+
 - **Code Cleanup**: Removed hardcoded version tags from source files — version is now single-sourced
 
 ### [v2.4.0] - 2026-02-10
+
 - **RPC Persists After Close**: Fixed critical issue where Discord presence lingered after Burp Suite closed
 - **JVM Shutdown Hook**: Safety net ensures presence is always cleared, even during abnormal exits
 - **Idempotent Shutdown**: Thread-safe shutdown logic prevents double-execution
 - **Code Cleanup**: Removed unused `isConnected` field
 
 ### [v2.3.0] - 2026-02-09
+
 - **Default App ID Fix**: Corrected incorrect default Discord Application ID that returned HTTP 404
 - **StatusDisplayType NPE**: Fixed crash from uninitialized `statusDisplayType` field in DiscordIPC 0.11.2
 - **App ID Validation**: Invalid App IDs now fail fast with a clear error message
@@ -117,52 +132,64 @@ If you want custom branding for your presence:
 - **Retry Logic**: 5 retries with capped exponential backoff (3s → 30s max)
 
 ### [v2.2.1] - 2026-02-09
+
 - **Shadow JAR Packaging**: Fixed `ClassNotFoundException` caused by thin JAR overwriting fat JAR
 - **UTF-8 Encoding**: Fixed unmappable character warning on Windows
 - **Build System**: Conditional GPG signing for GitHub Packages publish
 
 ### [v2.2.0] - 2026-02-09
+
 - **IPC Handshake NPE**: Fixed null `data` crash with retry-with-backoff on a background thread
 - **Dependency Upgrade**: DiscordIPC `0.10.2` → `0.11.2` with new API and null-safe presence cleanup
 - **API Migration**: Migrated to `setLargeImageWithTooltip`/`setSmallImageWithTooltip` API
 - **Connection Resilience**: Dedicated daemon thread with exponential backoff retries
 
 ### [v2.1.0] - 2026-01-28
+
 - **Major Refactoring**: Introduced component priority system and OOP registration logic
 - **Shadow Jar**: Improved build process with dependency relocation to fix runtime crashes
 - **RPC Stability**: Fixes for invalid ActivityType and UI sync race conditions
 - **Structure**: Organized codebase into providers and handlers subpackages
 
 ### [v2.0.0] - 2026-01-28
+
 - **Modular UI**: Decomposed settings tab into Settings, Log, About, and Help panels
 - **New Providers**: Site Map, Scope, and Collaborator tracking support
 - **Architecture**: Implemented ActivityProvider pattern for decentralized logic
 - **Logging**: ASCII art banners and improved console output
 
 ### [v1.5.2] - 2026-01-27
+
 - **Global RPC Switch**: Master toggle to enable/disable Discord RPC without unloading
 - **Rich Presence Toggles**: Granular control to show/hide specific Burp tools
 
 ### [v1.4.0] - 2026-01-27
+
 - **Performance**: Site Map caching for large projects
 - **Compliance**: Updates for BApp Store requirements
 
 ### [v1.3.2] - 2026-01-27
+
 - **UI & Logging**: Enhanced logs and context for custom logging section
 
 ### [v1.3.1] - 2026-01-27
+
 - **Bug Fixes**: Cleanup of RPC presence before disconnection
 
 ### [v1.3.0] - 2026-01-27
+
 - **New Features**: WebSocket monitoring, Burp version/edition/scope tracking
 
 ### [v1.2.0] - 2026-01-27
+
 - **Features**: Intruder tracking, custom state text, RPC toggle
 
 ### [v1.1.0] - 2026-01-27
+
 - **Technical**: Improved GUI threading and modal handling
 
 ### [v1.0.0] - 2026-01-05
+
 - **Initial Release**: Basic Discord RPC, core tool tracking (Proxy, Scanner, Repeater, Intruder)
 
 ---

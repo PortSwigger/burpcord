@@ -10,18 +10,14 @@ import com.jagrosh.discordipc.entities.Packet;
 import com.jagrosh.discordipc.entities.RichPresence;
 import com.jagrosh.discordipc.entities.User;
 import com.jagrosh.discordipc.entities.pipe.PipeStatus;
-import com.jagrosh.discordipc.entities.ActivityType;
-import com.jagrosh.discordipc.entities.StatusDisplayType;
 import com.google.gson.JsonObject;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -83,18 +79,16 @@ public class DiscordRPCManager {
         providers.sort(java.util.Comparator.comparingInt(ActivityProvider::getPriority));
     }
 
-    private static final int MAX_CONNECT_RETRIES = 5;
+    private static final int MAX_CONNECT_RETRIES = 3;
     private static final long INITIAL_RETRY_DELAY_MS = 3000;
-    private static final long MAX_RETRY_DELAY_MS = 30000;
-    private static final long CONNECT_TIMEOUT_MS = 10000;
+    private static final long MAX_RETRY_DELAY_MS = 15000;
 
     /**
      * Initializes the IPC client and starts the update scheduler.
      * <p>
      * Connection is attempted on a background thread with exponential backoff
-     * retries to handle transient Discord IPC handshake failures (e.g., null
-     * {@code data} in the handshake response when Discord is not fully ready,
-     * or the library blocking indefinitely on a pipe read).
+     * retries to handle transient Discord IPC failures (e.g., Discord not yet
+     * running when Burp Suite starts).
      * </p>
      */
     public void initialize() {
@@ -120,9 +114,8 @@ public class DiscordRPCManager {
     /**
      * Attempts to connect to Discord IPC with exponential backoff retries.
      * <p>
-     * Each attempt has a {@value #CONNECT_TIMEOUT_MS}ms timeout to prevent the
-     * library from blocking indefinitely when Discord's IPC pipe is open but
-     * unresponsive. Uses capped exponential backoff between attempts.
+     * Uses capped exponential backoff between attempts. Fails fast on
+     * invalid App IDs.
      * </p>
      *
      * @throws Exception if all retry attempts are exhausted.
@@ -135,15 +128,12 @@ public class DiscordRPCManager {
             try {
                 client = new IPCClient(appId);
                 client.setListener(createIPCListener());
-                connectWithTimeout(client, CONNECT_TIMEOUT_MS);
+                client.connect();
                 startScheduler();
                 return; // Success
             } catch (Exception e) {
                 lastException = e;
-                boolean isNullDataNpe = isHandshakeNullDataError(e);
-                boolean isTimeout = e instanceof TimeoutException;
-                boolean isAppIdInvalid = isAppIdNotFoundError(e);
-                if (isAppIdInvalid) {
+                if (isAppIdNotFoundError(e)) {
                     BurpcordSettingsTab.log("Burpcord: Discord App ID '" + appId
                             + "' is invalid or not registered for RPC (HTTP 404).");
                     BurpcordSettingsTab.log("Hint: Check your App ID in Settings, or reset to the default.");
@@ -151,61 +141,13 @@ public class DiscordRPCManager {
                 }
                 if (attempt < MAX_CONNECT_RETRIES) {
                     long delay = Math.min(INITIAL_RETRY_DELAY_MS * (1L << (attempt - 1)), MAX_RETRY_DELAY_MS);
-                    String reason;
-                    if (isTimeout) {
-                        reason = "Connection timed out (" + (CONNECT_TIMEOUT_MS / 1000)
-                                + "s) — Discord IPC unresponsive";
-                    } else if (isNullDataNpe) {
-                        reason = "Discord not fully ready (user data unavailable)";
-                    } else {
-                        reason = e.getMessage();
-                    }
                     BurpcordSettingsTab.log("Discord IPC connect attempt " + attempt + "/" + MAX_CONNECT_RETRIES
-                            + " failed: " + reason + " — retrying in " + (delay / 1000) + "s...");
+                            + " failed: " + e.getMessage() + " — retrying in " + (delay / 1000) + "s...");
                     Thread.sleep(delay);
                 }
             }
         }
         throw lastException;
-    }
-
-    /**
-     * Calls {@code client.connect()} with a timeout. If the library blocks
-     * indefinitely on the IPC pipe read, the connect thread is interrupted
-     * and a {@link TimeoutException} is thrown.
-     */
-    private void connectWithTimeout(IPCClient ipcClient, long timeoutMs) throws Exception {
-        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-            try {
-                ipcClient.connect();
-            } catch (Exception e) {
-                throw new java.util.concurrent.CompletionException(e);
-            }
-        });
-
-        try {
-            future.get(timeoutMs, TimeUnit.MILLISECONDS);
-        } catch (java.util.concurrent.ExecutionException e) {
-            // Unwrap the real exception from the async task
-            Throwable cause = e.getCause();
-            if (cause instanceof Exception)
-                throw (Exception) cause;
-            throw new RuntimeException(cause);
-        } catch (TimeoutException e) {
-            future.cancel(true);
-            throw new TimeoutException("Discord IPC connect timed out after " + (timeoutMs / 1000) + "s");
-        }
-    }
-
-    /**
-     * Checks if the exception is the known null {@code data} NPE from the
-     * DiscordIPC library's {@code Pipe.openPipe()} handshake parsing.
-     */
-    private static boolean isHandshakeNullDataError(Exception e) {
-        if (!(e instanceof NullPointerException))
-            return false;
-        String msg = e.getMessage();
-        return msg != null && msg.contains("\"data\"") && msg.contains("null");
     }
 
     /**
@@ -329,10 +271,6 @@ public class DiscordRPCManager {
         }
 
         RichPresence.Builder builder = new RichPresence.Builder();
-        // Explicitly set ActivityType and StatusDisplayType to prevent NPE in library
-        builder.setActivityType(ActivityType.Playing);
-        builder.setStatusDisplayType(StatusDisplayType.Name);
-
         builder.setLargeImageWithTooltip("burp", "Burp Suite Professional");
         builder.setStartTimestamp(startTime.toEpochSecond());
 
