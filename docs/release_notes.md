@@ -1,5 +1,15 @@
 # Burpcord Release Notes
 
+## [v2.5.3] - 2026-02-13
+
+### 🧹 Code Cleanup
+
+- **Data-Driven Feature Toggles**: Introduced a `FeatureToggle` record (Java 21) in `SettingsPanel` that declaratively binds each checkbox's label, tooltip, log name, config getter (`BooleanSupplier`), and config setter (`Consumer<Boolean>`). The old 9 individual `JCheckBox` fields and repetitive `addActionListener` wiring blocks were replaced with two `List<FeatureToggle>` definitions and a single generic `createFeaturePanel()` method. Reduced `SettingsPanel.java` from 345 to 298 lines (-47 lines).
+- **Fixed Reset App ID Bug**: `resetSettings()` hardcoded `"1457789738753965206"` but `BurpcordConfig.DEFAULT_APP_ID` is `"1457789708753965206"` (digit `738` vs `708`). Reset was sending users to a non-existent Discord application. Now references `BurpcordConfig.DEFAULT_APP_ID` and `BurpcordConfig.DEFAULT_UPDATE_INTERVAL` directly.
+- **Public Config Defaults**: Changed `DEFAULT_APP_ID` and `DEFAULT_UPDATE_INTERVAL` in `BurpcordConfig` from `private` to `public` so `SettingsPanel` (and any future consumer) can reference them instead of hardcoding values.
+
+---
+
 ## [v2.5.2] - 2026-02-13
 
 ### 🔧 Improvements

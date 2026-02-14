@@ -1,5 +1,15 @@
 # Burpcord Changelog
 
+## [v2.5.3] - 2026-02-13
+
+### 🧹 Code Cleanup
+
+- **Modernized Settings Panel**: Refactored feature toggle checkboxes to use a data-driven pattern, reducing boilerplate and making it easier to add new features.
+- **Fixed Reset Defaults**: The "Reset All Settings" button was using an incorrect App ID. It now correctly resets to the official Burpcord default.
+- **Exposed Config Defaults**: Default values for App ID and update interval are now shared constants, preventing future mismatches.
+
+---
+
 ## [v2.5.2] - 2026-02-13
 
 ### 🔧 Improvements

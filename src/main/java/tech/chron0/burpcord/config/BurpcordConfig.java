@@ -51,8 +51,8 @@ public class BurpcordConfig {
     }
 
     // Defaults
-    private static final String DEFAULT_APP_ID = "1457789708753965206";
-    private static final int DEFAULT_UPDATE_INTERVAL = 30;
+    public static final String DEFAULT_APP_ID = "1457789708753965206";
+    public static final int DEFAULT_UPDATE_INTERVAL = 30;
 
     public BurpcordConfig(burp.api.montoya.persistence.Preferences preferences) {
         this.preferences = preferences;

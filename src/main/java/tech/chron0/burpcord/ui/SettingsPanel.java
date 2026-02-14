@@ -9,8 +9,23 @@ import burp.api.montoya.MontoyaApi;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.util.List;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 
 public class SettingsPanel extends JPanel {
+
+    /**
+     * Declarative definition for a feature toggle checkbox.
+     * Each record binds a UI label/tooltip to its config getter and setter.
+     */
+    private record FeatureToggle(
+            String label,
+            String tooltip,
+            String logName,
+            BooleanSupplier getter,
+            Consumer<Boolean> setter) {
+    }
 
     private final MontoyaApi api;
     private final BurpcordConfig config;
@@ -20,15 +35,9 @@ public class SettingsPanel extends JPanel {
     private final JTextField appIdField;
     private final JSpinner intervalSpinner;
     private final JTextField customStateField;
-    private final JCheckBox showInterceptCheck;
-    private final JCheckBox showScanCheck;
-    private final JCheckBox showProxyCheck;
-    private final JCheckBox showRepeaterCheck;
-    private final JCheckBox showIntruderCheck;
-    private final JCheckBox showSiteMapCheck;
-    private final JCheckBox showScopeCheck;
-    private final JCheckBox showCollaboratorCheck;
-    private final JCheckBox showWebSocketsCheck;
+    private final List<FeatureToggle> toolFeatures;
+    private final List<FeatureToggle> advancedFeatures;
+    private final List<JCheckBox> allCheckboxes = new java.util.ArrayList<>();
 
     public SettingsPanel(MontoyaApi api, BurpcordConfig config, DiscordRPCManager rpcManager, LogPanel logPanel) {
         this.api = api;
@@ -43,25 +52,37 @@ public class SettingsPanel extends JPanel {
         intervalSpinner = new JSpinner(new SpinnerNumberModel(config.getUpdateInterval(), 1, 60, 1));
         customStateField = new JTextField(config.getCustomState(), 25);
 
-        // Feature checkboxes (using helper for cleaner code)
-        showInterceptCheck = createCheckboxWithTooltip("Show Intercept on Discord", config.isShowIntercept(),
-                "Show intercept on/off status in Discord presence");
-        showScanCheck = createCheckboxWithTooltip("Show Scanner on Discord", config.isShowScan(),
-                "Show active scan count in Discord presence");
-        showProxyCheck = createCheckboxWithTooltip("Show Proxy on Discord", config.isShowProxy(),
-                "Show proxy request count in Discord presence");
-        showRepeaterCheck = createCheckboxWithTooltip("Show Repeater on Discord", config.isShowRepeater(),
-                "Show repeater tab count in Discord presence");
-        showIntruderCheck = createCheckboxWithTooltip("Show Intruder on Discord", config.isShowIntruder(),
-                "Show intruder attack count in Discord presence");
-        showSiteMapCheck = createCheckboxWithTooltip("Show Site Map on Discord", config.isShowSiteMap(),
-                "Show site map host count in Discord presence");
-        showScopeCheck = createCheckboxWithTooltip("Show Scope on Discord", config.isShowScope(),
-                "Show target scope count in Discord presence");
-        showCollaboratorCheck = createCheckboxWithTooltip("Show Collaborator on Discord", config.isShowCollaborator(),
-                "Show Collaborator interactions (Burp Pro only)");
-        showWebSocketsCheck = createCheckboxWithTooltip("Show WebSocket on Discord", config.isShowWebSockets(),
-                "Show WebSocket message count in Discord presence");
+        // Feature toggle definitions — declarative, data-driven
+        toolFeatures = List.of(
+                new FeatureToggle("Show Intercept on Discord",
+                        "Show intercept on/off status in Discord presence",
+                        "Intercept", config::isShowIntercept, config::setShowIntercept),
+                new FeatureToggle("Show Scanner on Discord",
+                        "Show active scan count in Discord presence",
+                        "Scanner", config::isShowScan, config::setShowScan),
+                new FeatureToggle("Show Proxy on Discord",
+                        "Show proxy request count in Discord presence",
+                        "Proxy", config::isShowProxy, config::setShowProxy),
+                new FeatureToggle("Show Repeater on Discord",
+                        "Show repeater tab count in Discord presence",
+                        "Repeater", config::isShowRepeater, config::setShowRepeater),
+                new FeatureToggle("Show Intruder on Discord",
+                        "Show intruder attack count in Discord presence",
+                        "Intruder", config::isShowIntruder, config::setShowIntruder));
+
+        advancedFeatures = List.of(
+                new FeatureToggle("Show Site Map on Discord",
+                        "Show site map host count in Discord presence",
+                        "Site Map", config::isShowSiteMap, config::setShowSiteMap),
+                new FeatureToggle("Show Scope on Discord",
+                        "Show target scope count in Discord presence",
+                        "Scope", config::isShowScope, config::setShowScope),
+                new FeatureToggle("Show Collaborator on Discord",
+                        "Show Collaborator interactions (Burp Pro only)",
+                        "Collaborator", config::isShowCollaborator, config::setShowCollaborator),
+                new FeatureToggle("Show WebSocket on Discord",
+                        "Show WebSocket message count in Discord presence",
+                        "WebSocket", config::isShowWebSockets, config::setShowWebSockets));
 
         // Top section: Connection Settings + Status
         JPanel topSection = new JPanel(new GridLayout(1, 2, 15, 0));
@@ -70,12 +91,12 @@ public class SettingsPanel extends JPanel {
 
         // Middle section: Feature Toggles (two columns)
         JPanel middleSection = new JPanel(new GridLayout(1, 2, 15, 0));
-        middleSection.add(createToolFeaturesPanel());
-        middleSection.add(createAdvancedFeaturesPanel());
+        middleSection.add(createFeaturePanel("Tool Activity Features", toolFeatures));
+        middleSection.add(createFeaturePanel("Advanced Features", advancedFeatures));
 
         // Feature apply button with hint
         JPanel applyPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
-        JButton applyFeaturesBtn = new JButton("⟳ Apply Feature Changes");
+        JButton applyFeaturesBtn = new JButton("\u27F3 Apply Feature Changes");
         applyFeaturesBtn.setToolTipText("Click to apply feature toggle changes to Discord");
         applyFeaturesBtn.addActionListener(e -> {
             logPanel.clear();
@@ -199,72 +220,26 @@ public class SettingsPanel extends JPanel {
         return panel;
     }
 
-    private JPanel createToolFeaturesPanel() {
+    /**
+     * Builds a titled feature panel from a list of toggle definitions.
+     * Wires each checkbox to its config setter and log output.
+     */
+    private JPanel createFeaturePanel(String title, List<FeatureToggle> features) {
         JPanel panel = new JPanel(new GridLayout(0, 1, 5, 5));
         panel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "Tool Activity Features",
+                BorderFactory.createEtchedBorder(), title,
                 TitledBorder.LEFT, TitledBorder.TOP));
 
-        showInterceptCheck.addActionListener(e -> {
-            config.setShowIntercept(showInterceptCheck.isSelected());
-            logToggle("Intercept", showInterceptCheck.isSelected());
-        });
-        showScanCheck.addActionListener(e -> {
-            config.setShowScan(showScanCheck.isSelected());
-            logToggle("Scanner", showScanCheck.isSelected());
-        });
-        showProxyCheck.addActionListener(e -> {
-            config.setShowProxy(showProxyCheck.isSelected());
-            logToggle("Proxy", showProxyCheck.isSelected());
-        });
-        showRepeaterCheck.addActionListener(e -> {
-            config.setShowRepeater(showRepeaterCheck.isSelected());
-            logToggle("Repeater", showRepeaterCheck.isSelected());
-        });
-        showIntruderCheck.addActionListener(e -> {
-            config.setShowIntruder(showIntruderCheck.isSelected());
-            logToggle("Intruder", showIntruderCheck.isSelected());
-        });
-
-        panel.add(showInterceptCheck);
-        panel.add(showScanCheck);
-        panel.add(showProxyCheck);
-        panel.add(showRepeaterCheck);
-        panel.add(showIntruderCheck);
-
-        return panel;
-    }
-
-    private JPanel createAdvancedFeaturesPanel() {
-        JPanel panel = new JPanel(new GridLayout(0, 1, 5, 5));
-        panel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(), "Advanced Features (v1.4+)",
-                TitledBorder.LEFT, TitledBorder.TOP));
-
-        showSiteMapCheck.addActionListener(e -> {
-            config.setShowSiteMap(showSiteMapCheck.isSelected());
-            logToggle("Site Map", showSiteMapCheck.isSelected());
-        });
-        showScopeCheck.addActionListener(e -> {
-            config.setShowScope(showScopeCheck.isSelected());
-            logToggle("Scope", showScopeCheck.isSelected());
-        });
-        showCollaboratorCheck.addActionListener(e -> {
-            config.setShowCollaborator(showCollaboratorCheck.isSelected());
-            logToggle("Collaborator", showCollaboratorCheck.isSelected());
-        });
-        showWebSocketsCheck.addActionListener(e -> {
-            config.setShowWebSockets(showWebSocketsCheck.isSelected());
-            logToggle("WebSocket", showWebSocketsCheck.isSelected());
-        });
-
-        panel.add(showSiteMapCheck);
-        panel.add(showScopeCheck);
-        panel.add(showCollaboratorCheck);
-        panel.add(showWebSocketsCheck);
-
-        // Add spacer
-        panel.add(Box.createVerticalGlue());
+        for (FeatureToggle toggle : features) {
+            JCheckBox checkbox = new JCheckBox(toggle.label(), toggle.getter().getAsBoolean());
+            checkbox.setToolTipText(toggle.tooltip());
+            checkbox.addActionListener(e -> {
+                toggle.setter().accept(checkbox.isSelected());
+                logToggle(toggle.logName(), checkbox.isSelected());
+            });
+            panel.add(checkbox);
+            allCheckboxes.add(checkbox);
+        }
 
         return panel;
     }
@@ -301,18 +276,10 @@ public class SettingsPanel extends JPanel {
                 JOptionPane.YES_NO_OPTION);
 
         if (result == JOptionPane.YES_OPTION) {
-            appIdField.setText("1457789738753965206");
-            intervalSpinner.setValue(5);
+            appIdField.setText(BurpcordConfig.DEFAULT_APP_ID);
+            intervalSpinner.setValue(BurpcordConfig.DEFAULT_UPDATE_INTERVAL);
             customStateField.setText("");
-            showInterceptCheck.setSelected(true);
-            showScanCheck.setSelected(true);
-            showProxyCheck.setSelected(true);
-            showRepeaterCheck.setSelected(true);
-            showIntruderCheck.setSelected(true);
-            showSiteMapCheck.setSelected(true);
-            showScopeCheck.setSelected(true);
-            showCollaboratorCheck.setSelected(true);
-            showWebSocketsCheck.setSelected(true);
+            allCheckboxes.forEach(cb -> cb.setSelected(true));
 
             saveConnectionSettings();
             BurpcordSettingsTab.log("All settings reset to defaults.");
@@ -327,18 +294,4 @@ public class SettingsPanel extends JPanel {
         BurpcordExtension.logEnabledFeatures(config);
     }
 
-    /**
-     * Helper method to create a checkbox with a tooltip in one line.
-     * Reduces boilerplate for feature checkboxes.
-     *
-     * @param label    The checkbox label
-     * @param selected Initial selection state
-     * @param tooltip  The tooltip text
-     * @return A configured JCheckBox
-     */
-    private JCheckBox createCheckboxWithTooltip(String label, boolean selected, String tooltip) {
-        JCheckBox checkbox = new JCheckBox(label, selected);
-        checkbox.setToolTipText(tooltip);
-        return checkbox;
-    }
 }
