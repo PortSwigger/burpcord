@@ -256,9 +256,7 @@ public class SettingsPanel extends JPanel {
         config.setCustomState(customStateField.getText().trim());
 
         // Restart RPC with new settings
-        rpcManager.shutdown();
-        rpcManager.restartScheduler();
-        rpcManager.initialize();
+        rpcManager.reloadRPC();
 
         BurpcordSettingsTab.log("Connection settings saved and RPC restarted.");
         JOptionPane.showMessageDialog(

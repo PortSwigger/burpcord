@@ -100,8 +100,7 @@ public class BurpcordSettingsTab extends JPanel {
         JButton reloadBtn = new JButton("Reload Discord RPC");
         reloadBtn.addActionListener(e -> {
             log("Reloading Discord RPC...");
-            rpcManager.shutdown();
-            rpcManager.initialize();
+            rpcManager.reloadRPC();
         });
         statusBar.add(reloadBtn, BorderLayout.EAST);
 

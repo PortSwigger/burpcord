@@ -1,5 +1,15 @@
 # Burpcord Changelog
 
+## [v2.5.4] - 2026-02-13
+
+### 🐛 Bug Fixes
+
+- **Shutdown After Settings Save**: Fixed an issue where the extension could not cleanly shut down after saving connection settings. The shutdown guard was not being reset, causing the cleanup to silently skip on exit.
+- **Scheduler Leak on Settings Save**: Fixed a resource leak where saving connection settings created an orphaned background thread that was never cleaned up.
+- **Reload Button Shutdown**: Fixed the same shutdown guard issue in the "Reload Discord RPC" button.
+
+---
+
 ## [v2.5.3] - 2026-02-13
 
 ### 🧹 Code Cleanup

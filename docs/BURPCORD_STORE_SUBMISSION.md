@@ -97,6 +97,18 @@ If you want custom branding for your presence:
 
 ## Version History
 
+### [v2.5.4] - 2026-02-13
+
+- **Shutdown After Settings Save**: Fixed an issue where the extension could not cleanly shut down after saving connection settings
+- **Scheduler Leak on Settings Save**: Fixed a resource leak where saving settings created an orphaned background thread
+- **Reload Button Shutdown**: Fixed the same shutdown issue in the "Reload Discord RPC" button
+
+### [v2.5.3] - 2026-02-13
+
+- **Modernized Settings Panel**: Refactored feature toggles to use a data-driven pattern for easier maintenance
+- **Fixed Reset Defaults**: The "Reset All Settings" button was using an incorrect App ID — now correctly resets to the official default
+- **Exposed Config Defaults**: Default values are now shared constants, preventing future mismatches
+
 ### [v2.5.2] - 2026-02-13
 
 - **Updated Discord Library**: Upgraded to DiscordIPC 0.11.3 with upstream fixes for two crash bugs we reported

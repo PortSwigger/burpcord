@@ -1,5 +1,14 @@
 # Burpcord Release Notes
 
+## [v2.5.4] - 2026-02-13
+
+### 🐛 Bug Fixes
+
+- **`saveConnectionSettings()` shutdownCalled leak**: The method called `rpcManager.shutdown()` then `rpcManager.restartScheduler()` then `rpcManager.initialize()` manually. `shutdown()` sets `shutdownCalled` to `true` via `compareAndSet`, but the flag was never reset — so all subsequent `shutdown()` calls (extension unload, JVM hook) would no-op, leaving the Discord presence stuck on the user's profile. Additionally, `restartScheduler()` created a new `ScheduledExecutorService` before `initialize()` reconnected, leaking an orphaned scheduler thread. Fixed by replacing the 3-line sequence with `rpcManager.reloadRPC()`, which properly resets the flag.
+- **Reload button same issue**: `BurpcordSettingsTab.createStatusBar()` called `rpcManager.shutdown()` then `rpcManager.initialize()` without resetting `shutdownCalled`. Same fix — replaced with `rpcManager.reloadRPC()`.
+
+---
+
 ## [v2.5.3] - 2026-02-13
 
 ### 🧹 Code Cleanup
