@@ -1,5 +1,32 @@
 # Burpcord Release Notes
 
+Developer-oriented notes: internal behavior, APIs, filenames, and rationale. User-facing summaries live in [`CHANGELOG.md`](../CHANGELOG.md).
+
+## [v2.6.0] - 2026-03-22
+
+### Settings UI — `registerSettingsPanel`
+
+- **Removed** `BurpcordExtension` → `UserInterface.registerSuiteTab("Burpcord", …)`.
+- **Added** `BurpcordBurpSettingsPanel` implementing `burp.api.montoya.ui.settings.SettingsPanel` (FQCN in source to avoid clashing with the Swing form class). Wraps existing `BurpcordSettingsTab` root; `keywords()` for Settings search (`Burpcord`, `Discord`, `Rich Presence`, `RPC`, …).
+- **`BurpcordExtension`**: stores `Registration` from `registerSettingsPanel`, calls `deregister()` in `extensionUnloaded()` alongside `BurpcordSiteMapProvider.shutdown()`.
+- **Persistence**: unchanged — still `BurpcordConfig` / Montoya `Preferences`; no `SettingsPanelBuilder` duplicate store.
+- **BApp / review**: aligns with reviewer request to use main Settings instead of a suite tab; see [`docs/bapp-store-reviewer-response.md`](bapp-store-reviewer-response.md).
+
+### Site map — `BurpcordSiteMapProvider`
+
+- **Problem**: Prior code refreshed `api.siteMap().requestResponses().size()` on a ~60s TTL from the Discord scheduler path, materializing the full list (BApp criterion 9 / large projects).
+- **Primary path**: Same class implements `ProxyRequestHandler` + `BurpComponent`; `handleRequestReceived` records `interceptedRequest.url()` into `ConcurrentHashMap.newKeySet()` with **`UNIQUE_URL_CAP = 8192`**; `isActive()` / `updatePresence()` read only that bounded set (no `requestResponses()` on hot path).
+- **Fallback / true count**: `ScheduledExecutorService` thread **`Burpcord-SiteMap-TrueCount`**, `scheduleWithFixedDelay`: initial delay **`45` seconds**, period **`30` minutes** (in seconds). `refreshTrueSiteMapCount()` → `requestResponses().size()`; failures → `api.logging().logToError(...)`.
+- **Display**: If `lastTrueCountMs` within **`TRUE_COUNT_DISPLAY_STALE_MS`** (34 min), prefer `trueSiteMapCount` string; else proxy estimate (`~`, `≥8192`, or stale full-count suffix).
+- **Lifecycle**: `shutdown()` deregisters proxy handler and `shutdownNow()` the executor.
+- **Montoya gap**: no `SiteMap` size API without list materialization; upstream issue template in [`portswigger/montoya-upstream-site-map-count.md`](portswigger/montoya-upstream-site-map-count.md).
+
+### Refactor
+
+- **Renamed** `tech.chron0.burpcord.ui.SettingsPanel` → **`BurpcordConfigurationForm`** (`JPanel`) to disambiguate from `burp.api.montoya.ui.settings.SettingsPanel`.
+
+---
+
 ## [v2.5.4] - 2026-02-13
 
 ### 🐛 Bug Fixes

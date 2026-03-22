@@ -1,0 +1,5 @@
+# BApp Store review — how we addressed the feedback (v2.6.0)
+
+**Site map / memory:** We no longer call `siteMap().requestResponses().size()` from the Discord update path. Instead we track a **capped** set of unique request URLs seen via the **Proxy** handler, so routine presence updates stay bounded. The **full** site map count still runs only on a **dedicated background thread**, on a **long interval** (first after 45s, then every 30 minutes), with errors logged to the extension error stream. We intend to propose a Montoya API for a cheap size or lazy access separately ([`montoya-upstream-site-map-count.md`](portswigger/montoya-upstream-site-map-count.md)).
+
+**Settings location:** We **removed** the Burpcord **suite tab** and register the same UI with **`registerSettingsPanel`**, so it appears under Burp’s main **Settings** dialog (with search keywords for “Burpcord” / “Discord” / “RPC”). The panel is **deregistered** on extension unload; configuration still uses the existing **Preferences** keys—no duplicate storage in the declarative settings builder.

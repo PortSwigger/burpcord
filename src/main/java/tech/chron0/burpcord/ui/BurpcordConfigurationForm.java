@@ -13,7 +13,10 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-public class SettingsPanel extends JPanel {
+/**
+ * Main configuration form (connection, toggles, embedded log) shown inside Burp Settings.
+ */
+public class BurpcordConfigurationForm extends JPanel {
 
     /**
      * Declarative definition for a feature toggle checkbox.
@@ -39,7 +42,8 @@ public class SettingsPanel extends JPanel {
     private final List<FeatureToggle> advancedFeatures;
     private final List<JCheckBox> allCheckboxes = new java.util.ArrayList<>();
 
-    public SettingsPanel(MontoyaApi api, BurpcordConfig config, DiscordRPCManager rpcManager, LogPanel logPanel) {
+    public BurpcordConfigurationForm(MontoyaApi api, BurpcordConfig config, DiscordRPCManager rpcManager,
+            LogPanel logPanel) {
         this.api = api;
         this.config = config;
         this.rpcManager = rpcManager;
@@ -72,7 +76,7 @@ public class SettingsPanel extends JPanel {
 
         advancedFeatures = List.of(
                 new FeatureToggle("Show Site Map on Discord",
-                        "Show site map host count in Discord presence",
+                        "Primary: unique URLs seen via Proxy (bounded). Periodically reconciles with full site map count on a long interval.",
                         "Site Map", config::isShowSiteMap, config::setShowSiteMap),
                 new FeatureToggle("Show Scope on Discord",
                         "Show target scope count in Discord presence",
@@ -291,5 +295,4 @@ public class SettingsPanel extends JPanel {
     private void logEnabledFeatures() {
         BurpcordExtension.logEnabledFeatures(config);
     }
-
 }

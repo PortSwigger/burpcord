@@ -1,5 +1,8 @@
 # Burpcord - BApp Store Submission
 
+**Reviewer feedback and how we addressed it (v2.6.0):** see [bapp-store-reviewer-response.md](bapp-store-reviewer-response.md).  
+**Planned Montoya upstream issue (site map size):** [portswigger/montoya-upstream-site-map-count.md](portswigger/montoya-upstream-site-map-count.md).
+
 ## Extension Overview
 
 Burpcord integrates Discord Rich Presence with Burp Suite, displaying your real-time security testing activity on your Discord profile. Share your work status with teammates, friends, or the security community while you hunt for vulnerabilities.
@@ -96,6 +99,11 @@ If you want custom branding for your presence:
 ---
 
 ## Version History
+
+### [v2.6.0] - 2026-03-22
+
+- **BApp feedback — Settings**: Moved configuration from a suite tab to Burp’s Settings dialog (`registerSettingsPanel`)
+- **BApp feedback — Site map**: Avoid loading the full site map on the hot path; bounded proxy URL tracking plus infrequent full count on a background thread
 
 ### [v2.5.4] - 2026-02-13
 

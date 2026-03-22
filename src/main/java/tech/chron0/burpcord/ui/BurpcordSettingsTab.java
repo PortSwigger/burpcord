@@ -15,7 +15,7 @@ import java.util.List;
  * 
  * <p>
  * This class creates and manages the graphical user interface for configuring
- * Burpcord settings. It appears as a tab in the main Burp Suite window and
+ * Burpcord settings. It is registered in Burp's Settings dialog and
  * provides a tabbed interface for Settings, About, and Help sections.
  * </p>
  * 
@@ -59,7 +59,7 @@ public class BurpcordSettingsTab extends JPanel {
 
         // Initialize Panels
         this.logPanel = new LogPanel();
-        SettingsPanel settingsPanel = new SettingsPanel(api, config, rpcManager, logPanel);
+        BurpcordConfigurationForm settingsPanel = new BurpcordConfigurationForm(api, config, rpcManager, logPanel);
         AboutPanel aboutPanel = new AboutPanel();
         HelpPanel helpPanel = new HelpPanel();
 

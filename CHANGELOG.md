@@ -1,5 +1,16 @@
 # Burpcord Changelog
 
+High-level changes for users and release highlights. For implementation detail (classes, APIs, refactors), see [`docs/release_notes.md`](docs/release_notes.md).
+
+## [v2.6.0] - 2026-03-22
+
+### ✨ What's new
+
+- **Settings moved into Burp** — Open **Burp Suite → Settings** (gear icon) and search for **Burpcord** or **Discord**. All options, the log viewer, and Help/About are there. The old top-level **Burpcord** window tab is gone, so configuration matches how other extensions are expected to live in Burp.
+- **Site map status without slowing huge projects** — Your Discord line for site map now leans on **unique URLs seen through the proxy** (capped so memory stays predictable). Occasionally, Burpcord still updates the **full** site map total in the **background** so you can see an exact count when that refresh is recent. You may see wording like “unique URLs (proxy)” vs “site map items” depending on what’s freshest.
+
+---
+
 ## [v2.5.4] - 2026-02-13
 
 ### 🐛 Bug Fixes

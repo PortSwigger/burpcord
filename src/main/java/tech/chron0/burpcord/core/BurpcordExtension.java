@@ -6,10 +6,12 @@ import tech.chron0.burpcord.discord.DiscordRPCManager;
 import tech.chron0.burpcord.listeners.*;
 import tech.chron0.burpcord.listeners.providers.*;
 import tech.chron0.burpcord.listeners.handlers.*;
+import tech.chron0.burpcord.ui.BurpcordBurpSettingsPanel;
 import tech.chron0.burpcord.ui.BurpcordSettingsTab;
 
 import burp.api.montoya.BurpExtension;
 import burp.api.montoya.MontoyaApi;
+import burp.api.montoya.core.Registration;
 import burp.api.montoya.extension.ExtensionUnloadingHandler;
 
 import java.util.Arrays;
@@ -44,6 +46,8 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
 
         private DiscordRPCManager rpcManager;
         private Thread shutdownHook;
+        private BurpcordSiteMapProvider siteMapProvider;
+        private Registration settingsPanelRegistration;
 
         @Override
         public void initialize(MontoyaApi api) {
@@ -58,10 +62,12 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
                 // Initialize Components
                 initializeComponents(api, config, rpcManager);
 
-                // UI
+                // UI — Burp Settings dialog (BApp Store: prefer registerSettingsPanel over suite tab)
                 SwingUtilities.invokeLater(() -> {
-                        BurpcordSettingsTab settingsTab = new BurpcordSettingsTab(api, config, rpcManager);
-                        api.userInterface().registerSuiteTab("Burpcord", settingsTab);
+                        BurpcordSettingsTab settingsRoot = new BurpcordSettingsTab(api, config, rpcManager);
+                        api.userInterface().applyThemeToComponent(settingsRoot);
+                        settingsPanelRegistration = api.userInterface()
+                                        .registerSettingsPanel(new BurpcordBurpSettingsPanel(settingsRoot));
                 });
 
                 // Register Unload
@@ -87,6 +93,14 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
 
         @Override
         public void extensionUnloaded() {
+                if (siteMapProvider != null) {
+                        siteMapProvider.shutdown();
+                        siteMapProvider = null;
+                }
+                if (settingsPanelRegistration != null) {
+                        settingsPanelRegistration.deregister();
+                        settingsPanelRegistration = null;
+                }
                 if (rpcManager != null) {
                         rpcManager.shutdown();
                 }
@@ -131,6 +145,7 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
         }
 
         private void initializeComponents(MontoyaApi api, BurpcordConfig config, DiscordRPCManager rpcManager) {
+                siteMapProvider = new BurpcordSiteMapProvider(api, config);
                 // Initialize all components - Priority is now defined within each class via
                 // getPriority()
                 List<ActivityProvider> components = Arrays.asList(
@@ -139,7 +154,7 @@ public class BurpcordExtension implements BurpExtension, ExtensionUnloadingHandl
                                 new BurpcordRepeaterListener(config),
                                 new BurpcordIntruderListener(config),
                                 new BurpcordWebSocketListener(config),
-                                new BurpcordSiteMapProvider(api, config),
+                                siteMapProvider,
                                 new BurpcordScopeProvider(api, config),
                                 new BurpcordCollaboratorProvider(api, config));
 

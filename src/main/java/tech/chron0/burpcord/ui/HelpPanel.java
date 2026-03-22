@@ -32,6 +32,7 @@ public class HelpPanel extends JPanel {
                 1. Ensure Discord desktop is running on your computer
                 2. Burpcord will automatically connect to Discord IPC
                 3. Your Burp Suite activity will appear on your Discord profile
+                4. Open Burp Settings (gear) and search for "Burpcord" to configure
 
                 CONNECTION SETTINGS
                 -------------------
@@ -51,7 +52,7 @@ public class HelpPanel extends JPanel {
 
                 ADVANCED FEATURES (v1.4+)
                 -------------------------
-                • Site Map: Displays mapped endpoint count
+                • Site Map: Unique URLs seen via Proxy (bounded); periodic full site map count
                 • Scope: Shows in-scope target count
                 • Collaborator: Displays OOB interaction hits (Pro only)
                 • WebSocket: Tracks WebSocket message counts

@@ -14,7 +14,7 @@ This file provides guidance to AI agents and WARP (warp.dev) when working with c
 
 Burpcord is a Burp Suite extension that integrates Discord Rich Presence functionality. It displays real-time Burp Suite activity on Discord profiles, including security testing status, scan results, tool usage, and advanced metrics via the Montoya API. The extension is built using Java 21 and the Burp Suite Montoya API.
 
-**Current Version:** 2.5.4
+**Current Version:** 2.6.0
 
 ## Build System
 
@@ -62,7 +62,7 @@ make clean
 
 - Initializes the Discord RPC manager
 - Registers handlers for Proxy, Scanner, Repeater, Intruder, and WebSockets
-- Creates the Settings UI tab
+- Registers the Settings UI in Burp’s main Settings dialog (`registerSettingsPanel`)
 - Implements proper cleanup via `ExtensionUnloadingHandler` and a JVM shutdown hook
 
 ### Core Components
@@ -93,13 +93,15 @@ make clean
 - `BurpcordIntruderListener` - Tracks Intruder attack requests via `HttpHandler`
 - `BurpcordWebSocketListener` - Monitors WebSocket messages via `WebSocketCreatedHandler`
 
-**BurpcordSettingsTab** - GUI configuration interface:
+**BurpcordSettingsTab** - Root Swing UI embedded in Burp Settings (`BurpcordBurpSettingsPanel`):
 
 - Reload RPC button for quick reconnection
 - App ID and interval configuration
 - Custom state text field
 - Feature toggles for all status types
 - Built-in log viewer with timestamps
+
+**BurpcordConfigurationForm** - Connection and feature-toggle form inside the Settings tab
 
 ### Threading Model
 
@@ -119,7 +121,7 @@ Status updates follow this priority order (highest to lowest):
 3. **Proxy** - Displays accurate request count from Montoya API
 4. **Repeater** - Shows when Repeater was used in last 60s
 5. **Intruder** - Shows when Intruder attack is active (last 60s)
-6. **Site Map** - Displays mapped endpoint count
+6. **Site Map** - Bounded unique URLs via Proxy; periodic full `requestResponses().size()` on a background thread for reconciliation
 7. **Scope** - Shows unique target count in scope
 8. **Collaborator** - Shows OOB interaction hits (Pro only)
 9. **WebSocket** - Shows message count when WebSocket activity detected
@@ -178,7 +180,7 @@ There is no automated test suite. Manual testing requires:
 2. Verifying Discord is running and Game Activity is enabled
 3. Testing each feature (Intercept, Scanner, Proxy, Repeater, Intruder) individually
 4. Testing v1.3 features (Site Map, Scope, Collaborator, WebSockets)
-5. Checking the Burpcord tab appears and settings persist
+5. Opening **Settings** and confirming the Burpcord panel appears; settings persist
 6. Verifying proper cleanup when unloading the extension
 7. Testing the log viewer displays connection events
 
@@ -190,7 +192,7 @@ There is no automated test suite. Manual testing requires:
 2. Create or modify a listener/handler to update those variables
 3. Update `updateStatusFromStats()` to include the new status in priority logic
 4. Add configuration toggle in `BurpcordConfig` if user-configurable
-5. Add checkbox to `BurpcordSettingsTab`
+5. Add checkbox to `BurpcordConfigurationForm`
 
 **Modifying status priority:**
 Edit the conditional logic order in `DiscordRPCManager.updateStatusFromStats()`
@@ -200,7 +202,7 @@ Users configure this via Settings tab. Default is 5 seconds (`DEFAULT_UPDATE_INT
 
 **Debugging Discord IPC issues:**
 
-1. Check the built-in log viewer in the Burpcord tab
+1. Check the built-in log viewer in the Burpcord Settings panel
 2. Check Burp's extension output/error streams
 3. The `IPCListener` logs connection events
 
