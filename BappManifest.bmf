@@ -1,13 +1,13 @@
 Uuid: b4df2fbd9a9f47468994436e58aa6234
 ExtensionType: 1
-Name: Burpcord
+Name: Burpcord, Discord Rich Presence for Burp
 RepoName: burpcord
 ScreenVersion: 2.6.0
 SerialVersion: 1
 MinPlatformVersion: 28
 ProOnly: False
 Author: Jon Marien
-ShortDescription: This extension integrates Discord Rich Presence with Burp Suite, displaying real-time security testing activity on your Discord profile. It tracks intercepts, scans, proxy requests, manual tests, and attacks.
+ShortDescription: Integrates Discord Rich Presence with Burp Suite, displaying real-time security testing stats on your Discord profile.
 EntryPoint: Burpcord-2.6.0.jar
 BuildCommand: ./gradlew clean build
 SupportedProducts: Pro, Community
