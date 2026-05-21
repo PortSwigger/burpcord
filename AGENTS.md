@@ -73,7 +73,7 @@ make clean
 - Periodic status updates via `ScheduledExecutorService`
 - `ActivityProvider` registry sorted by `getPriority()` (lower = higher priority)
 - Round-robin rotation across all active providers on each update tick
-- Edition-aware large-image tooltip via `BurpSuiteInfo` from `api.burpSuite().version()`
+- Edition-aware large-image tooltip via `BurpSuiteInfo` from `api.burpSuite().version()` (edition + version string)
 - Idempotent shutdown with `AtomicBoolean` guard and explicit presence clearing
 
 **BurpcordConfig** - Configuration persistence layer:

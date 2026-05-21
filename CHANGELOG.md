@@ -6,7 +6,7 @@ High-level changes for users and release highlights. For implementation detail (
 
 ### 🐛 Bug Fixes
 
-- **Correct Burp edition on Discord**: The large-image tooltip and idle status now reflect your actual Burp edition (Community, Professional, or Enterprise) instead of always saying "Burp Suite Professional".
+- **Correct Burp edition on Discord**: The large-image tooltip and idle status now reflect your actual Burp edition and version (Community, Professional, or Enterprise) instead of always saying "Burp Suite Professional".
 - **Stuck scanner status**: Scanner presence no longer stays on "Scanning Targets" forever after passive scan findings. It now expires 60 seconds after the last new issue, matching Repeater/Intruder behavior.
 - **Status rotation restored**: When multiple tools are active, Discord presence now rotates through them on each update interval instead of freezing on the highest-priority provider.
 

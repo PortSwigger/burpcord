@@ -275,7 +275,7 @@ public class DiscordRPCManager {
         }
 
         RichPresence.Builder builder = new RichPresence.Builder();
-        builder.setLargeImageWithTooltip("burp", burpSuiteInfo.productName());
+        builder.setLargeImageWithTooltip("burp", burpSuiteInfo.fullVersionString());
         builder.setStartTimestamp(startTime.toEpochSecond());
 
         String state = manualState != null && !manualState.isEmpty() ? manualState : config.getCustomState();

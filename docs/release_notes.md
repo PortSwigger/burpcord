@@ -7,7 +7,7 @@ Developer-oriented notes: internal behavior, APIs, filenames, and rationale. Use
 ### Edition-aware presence
 
 - **Added** `BurpSuiteInfo` — snapshot from `api.burpSuite().version()` at startup (`name()`, `toString()`, `edition()`).
-- **`DiscordRPCManager`**: large-image tooltip uses `burpSuiteInfo.productName()`; idle fallback details use `fullVersionString()` instead of hardcoded "Burp Suite Professional".
+- **`DiscordRPCManager`**: large-image tooltip and idle fallback details use `burpSuiteInfo.fullVersionString()` (e.g. `Burp Suite Professional 2026.1.2`) instead of hardcoded or edition-only text.
 - **`BurpcordExtension`**: logs detected Burp version on load.
 
 ### Status rotation
