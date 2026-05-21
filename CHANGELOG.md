@@ -2,6 +2,16 @@
 
 High-level changes for users and release highlights. For implementation detail (classes, APIs, refactors), see [`docs/release_notes.md`](docs/release_notes.md).
 
+## [v2.7.0] - 2026-05-21
+
+### 🐛 Bug Fixes
+
+- **Correct Burp edition on Discord**: The large-image tooltip and idle status now reflect your actual Burp edition (Community, Professional, or Enterprise) instead of always saying "Burp Suite Professional".
+- **Stuck scanner status**: Scanner presence no longer stays on "Scanning Targets" forever after passive scan findings. It now expires 60 seconds after the last new issue, matching Repeater/Intruder behavior.
+- **Status rotation restored**: When multiple tools are active, Discord presence now rotates through them on each update interval instead of freezing on the highest-priority provider.
+
+---
+
 ## [v2.6.0] - 2026-03-22
 
 ### ✨ What's new

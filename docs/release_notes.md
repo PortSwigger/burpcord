@@ -2,6 +2,25 @@
 
 Developer-oriented notes: internal behavior, APIs, filenames, and rationale. User-facing summaries live in [`CHANGELOG.md`](../CHANGELOG.md).
 
+## [v2.7.0] - 2026-05-21
+
+### Edition-aware presence
+
+- **Added** `BurpSuiteInfo` — snapshot from `api.burpSuite().version()` at startup (`name()`, `toString()`, `edition()`).
+- **`DiscordRPCManager`**: large-image tooltip uses `burpSuiteInfo.productName()`; idle fallback details use `fullVersionString()` instead of hardcoded "Burp Suite Professional".
+- **`BurpcordExtension`**: logs detected Burp version on load.
+
+### Status rotation
+
+- **`DiscordRPCManager.updatePresence()`**: collects all active `ActivityProvider`s (already sorted by priority), round-robins with `rotationIndex` each scheduler tick, resets index on `shutdown()` / `reloadRPC()`.
+- Replaces prior `break`-on-first-active behavior that prevented documented rotation.
+
+### Scanner TTL
+
+- **`BurpcordScannerListener`**: `lastScanActivityTime` + `SCAN_ACTIVITY_TTL_MS = 60_000`; `isActive()` no longer keyed on permanent `issueCount > 0`. Issue count still shown while provider is active.
+
+---
+
 ## [v2.6.0] - 2026-03-22
 
 ### Settings UI — `registerSettingsPanel`
